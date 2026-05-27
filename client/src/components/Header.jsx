@@ -26,7 +26,7 @@ const Header = () => {
                     {/* 'ms-auto' pushes links all the way to the right side of the screen */}
                     <Nav className='ms-auto'>
                         <Nav.Link as={Link} to='/'>
-                            Home
+                            Početna
                         </Nav.Link>
                         <Nav.Link as={Link} to='/login'>
                             Prijava

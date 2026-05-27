@@ -121,6 +121,7 @@ const HomeScreen = () => {
                   placeholder="Kako možemo da Vam pomognemo?" 
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
+                  style={{resize: 'none'}}
                   required
                 />
               </Form.Group>

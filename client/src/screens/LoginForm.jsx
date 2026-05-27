@@ -36,14 +36,14 @@ const LoginForm = () => {
     <div>
       <form onSubmit={handleSubmit}>
         
-        <label>Choose your role: </label>
+        <label>Izaberite ulogu: </label>
         <select value={role} onChange={(e) => setRole(e.target.value)}>
           <option value='administrator'>Administrator</option>
-          <option value='medical-staff'>Medical staff</option>
-          <option value='patient'>Patient</option>
+          <option value='medical-staff'>Medicinska sestra</option>
+          <option value='patient'>Pacijent</option>
         </select>
         
-        <p>You have selected: {role}</p>
+        <p>Izabrali ste: {role}</p>
         
         <input type='text' value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" />
         <input type='password' value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
