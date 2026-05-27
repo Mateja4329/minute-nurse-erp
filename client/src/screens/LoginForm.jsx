@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
-import { useNavigate } from 'react-router-dom'
-import {Link} from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
+import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap'
 
 const LoginForm = () => {
     // role: The variable from which we read the current value (eg the currently selected role).
@@ -33,30 +33,87 @@ const LoginForm = () => {
   }
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        
-        <label>Izaberite ulogu: </label>
-        <select value={role} onChange={(e) => setRole(e.target.value)}>
-          <option value='administrator'>Administrator</option>
-          <option value='medical-staff'>Medicinska sestra</option>
-          <option value='patient'>Pacijent</option>
-        </select>
-        
-        <p>Izabrali ste: {role}</p>
-        
-        <input type='text' value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" />
-        <input type='password' value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
-        
-        <button type='submit'>Login</button>
-      
-      </form>
+    <Container>
+      {/* Center the login card vertically and horizontally using Bootstrap grid */}
+      <Row className="justify-content-center mt-5">
+        <Col xs={12} md={8} lg={5}>
+          {/* shadow-lg creates a nice 3D pop effect, rounded-lg smooths the corners */}
+          <Card className="shadow-lg border-0 rounded-lg">
+            
+            {/* Custom medical green background for the header to match the Footer */}
+            <Card.Header 
+              className="text-white text-center py-4" 
+              style={{ backgroundColor: '#125447' }}
+            >
+              <h3 className="fw-bold mb-0">Prijava na sistem</h3>
+            </Card.Header>
+            
+            <Card.Body className="p-5">
+              <Form onSubmit={handleSubmit}>
+                
+                {/* Role selection dropdown */}
+                <Form.Group className="mb-4">
+                  <Form.Label className="text-muted fw-bold">Izaberite ulogu</Form.Label>
+                  <Form.Select 
+                    value={role} 
+                    onChange={(e) => setRole(e.target.value)}
+                    size="lg" // Makes the input field larger and more clickable
+                  >
+                    <option value='administrator'>Administrator</option>
+                    <option value='medical-staff'>Medicinsko osoblje</option>
+                    <option value='patient'>Pacijent</option>
+                  </Form.Select>
+                </Form.Group>
 
-        {/* Link to the registration page for users who don't have an account */}
-        <div style={{ marginTop: '15px' }}>
-            Novi ste na poslu ili ste novi pacijent? <Link to="/Register">Kreirajte nalog ovde</Link>
-        </div>
-    </div>
+                {/* Username input */}
+                <Form.Group className="mb-4">
+                  <Form.Label className="text-muted fw-bold">Korisničko ime</Form.Label>
+                  <Form.Control 
+                    type="text" 
+                    placeholder="Unesite korisničko ime"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    size="lg"
+                    required
+                  />
+                </Form.Group>
+
+                {/* Password input */}
+                <Form.Group className="mb-4">
+                  <Form.Label className="text-muted fw-bold">Lozinka</Form.Label>
+                  <Form.Control 
+                    type="password" 
+                    placeholder="Unesite lozinku"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    size="lg"
+                    required
+                  />
+                </Form.Group>
+
+                {/* Submit button with custom matching color */}
+                <Button 
+                  variant="primary" 
+                  type="submit" 
+                  className="w-100 py-2 fs-5 mt-2 mb-4"
+                  style={{ backgroundColor: '#1a7a68', border: 'none' }}
+                >
+                  Prijavi se
+                </Button>
+              </Form>
+
+              {/* Registration link for new users smoothly integrated at the bottom */}
+              <div className="text-center text-muted border-top pt-4">
+                Novi ste na poslu ili ste novi pacijent? <br/>
+                <Link to="/register" style={{ color: '#1a7a68', fontWeight: 'bold', textDecoration: 'none' }}>
+                  Kreirajte nalog ovde
+                </Link>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   )
 }
 
