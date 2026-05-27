@@ -3,17 +3,20 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import LoginForm from './screens/LoginForm'
-import AdminPanel from './screens/AdminPanel'
-import MedicalStaffPanel from './screens/MedicalStaffPanel'
-import PatientPanel from './screens/PatientPanel'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import RegisterScreen from './screens/RegisterScreen'
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+// Adding the pages
+import HomeScreen from './screens/HomeScreen';
+import LoginForm from './screens/LoginForm';
+import RegisterScreen from './screens/RegisterScreen';
+import AdminPanel from './screens/AdminPanel';
+import MedicalStaffPanel from './screens/MedicalStaffPanel';
+import PatientPanel from './screens/PatientPanel';
 
 // Import routing utilities from react-router-dom for handling navigation
 import {
   createBrowserRouter,
-  createRoutesFromElements,
+  createRoutesFromElements, 
   Route,
   RouterProvider,
 } from 'react-router-dom'
@@ -25,9 +28,10 @@ const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path='/' element={<App />}>
       {/* Default route - shows LoginForm when visiting the root path */}
-      <Route index={true} element={<LoginForm />} />
+      <Route index={true} element={<HomeScreen />} />
 
       {/* Commented routes for future admin panels */}
+      <Route path="login" element={<LoginForm />} />
       <Route path="register" element={<RegisterScreen />} />
 
       <Route path="Administrator" element={<AdminPanel />} />

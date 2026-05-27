@@ -28,6 +28,12 @@ const Header = () => {
                         <Nav.Link as={Link} to='/'>
                             Home
                         </Nav.Link>
+                        <Nav.Link as={Link} to='/login'>
+                            Prijava
+                        </Nav.Link>
+                        <Nav.Link as={Link} to='/register'>
+                            Registracija
+                        </Nav.Link>
                     </Nav>
                 </Navbar.Collapse>
             </Container>
