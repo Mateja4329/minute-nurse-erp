@@ -46,8 +46,8 @@ const AdminPanel = () => {
               <tr>
                 <th>ID</th>
                 <th>Ime i prezime</th>
-                <th>Uloga</th>
                 <th>Email</th>
+                <th>Uloga</th>
                 <th>Radnje</th>
               </tr>
             </thead>

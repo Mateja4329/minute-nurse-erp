@@ -1,5 +1,6 @@
 import React, {useState} from 'react'
 import { useNavigate } from 'react-router-dom'
+import {Link} from 'react-router-dom'
 
 const LoginForm = () => {
     // role: The variable from which we read the current value (eg the currently selected role).
@@ -50,6 +51,11 @@ const LoginForm = () => {
         <button type='submit'>Login</button>
       
       </form>
+
+        {/* Link to the registration page for users who don't have an account */}
+        <div style={{ marginTop: '15px' }}>
+            Novi ste na poslu ili ste novi pacijent? <Link to="/Register">Kreirajte nalog ovde</Link>
+        </div>
     </div>
   )
 }

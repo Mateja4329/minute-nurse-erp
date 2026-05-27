@@ -3,11 +3,12 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import LoginForm from './components/LoginForm'
-import AdminPanel from './components/AdminPanel'
-import MedicalStaffPanel from './components/MedicalStaffPanel'
-import PatientPanel from './components/PatientPanel'
+import LoginForm from './screens/LoginForm'
+import AdminPanel from './screens/AdminPanel'
+import MedicalStaffPanel from './screens/MedicalStaffPanel'
+import PatientPanel from './screens/PatientPanel'
 import 'bootstrap/dist/css/bootstrap.min.css'
+import RegisterScreen from './screens/RegisterScreen'
 
 // Import routing utilities from react-router-dom for handling navigation
 import {
@@ -27,6 +28,8 @@ const router = createBrowserRouter(
       <Route index={true} element={<LoginForm />} />
 
       {/* Commented routes for future admin panels */}
+      <Route path="register" element={<RegisterScreen />} />
+
       <Route path="Administrator" element={<AdminPanel />} />
       <Route path="MedicalStaff" element={<MedicalStaffPanel />} />
       <Route path="Patient" element={<PatientPanel />} />
