@@ -40,8 +40,9 @@ const AdminPanel = () => {
       lastName: 'Ilić',
       email: 'sanja.ilic@minutenurse.rs',
       phone: '+381651112223',
-      department: 'Opšta praksa',
+      role: 'Medicinska sestra',
       shift: 'Jutarnja',
+      salary: '90000 rsd', // DODATO: Plata
       status: 'Aktivan'
     },
     {
@@ -50,14 +51,15 @@ const AdminPanel = () => {
       lastName: 'Simić',
       email: 'dragan.simic@minutenurse.rs',
       phone: '+381634445556',
-      department: 'Kardiologija',
+      role: 'Lekar/Doktor',
       shift: 'Popodnevna',
+      salary: '150000 rsd', // DODATO: Plata
       status: 'Aktivan'
     }
   ])
 
   // ==========================================
-  // 3. SCHEDULES STATE & MOCK DATA (NEW - UML Alignment)
+  // 3. SCHEDULES STATE & MOCK DATA
   // ==========================================
   const [schedules, setSchedules] = useState([
     {
@@ -66,13 +68,15 @@ const AdminPanel = () => {
       staffName: 'Sanja Ilić',
       date: '2026-06-01',
       time: '09:00',
-      department: 'Opšta praksa',
+      service: 'Davanje terapije (Infuzija)',
+      location: 'Kućna poseta',
+      price: '6000 rsd', // DODATO: Cena
       status: 'Zakazano'
     }
   ])
 
   // ==========================================
-  // 4. VISIT REPORTS STATE & MOCK DATA (NEW - UML Alignment)
+  // 4. VISIT REPORTS STATE & MOCK DATA
   // ==========================================
   const [reports] = useState([
     {
@@ -88,28 +92,29 @@ const AdminPanel = () => {
   // ==========================================
   // 5. MODALS & FORMS CONTROL STATES
   // ==========================================
-  // Patient Modal
   const [showPatientModal, setShowPatientModal] = useState(false)
   const [isEditingPatient, setIsEditingPatient] = useState(false)
   const [patientFormData, setPatientFormData] = useState({
     id: null, firstName: '', lastName: '', familyName: '', address: '', phone: '', email: '', medicalNotes: '', status: 'Aktivan'
   })
 
-  // Staff Modal
   const [showStaffModal, setShowStaffModal] = useState(false)
   const [isEditingStaff, setIsEditingStaff] = useState(false)
   const [staffFormData, setStaffFormData] = useState({
-    id: null, firstName: '', lastName: '', email: '', phone: '', department: 'Opšta praksa', shift: 'Jutarnja', status: 'Aktivan'
+    // DODATO: salary polje
+    id: null, firstName: '', lastName: '', email: '', phone: '', role: 'Medicinska sestra', shift: 'Jutarnja', salary: '', status: 'Aktivan'
   })
 
-  // Schedule Modal (NEW)
   const [showScheduleModal, setShowScheduleModal] = useState(false)
   const [scheduleFormData, setScheduleFormData] = useState({
-    patientIndex: '0', // Stores index of selected patient from array
-    staffIndex: '0',   // Stores index of selected nurse from array
+    // DODATO: price polje
+    patientIndex: '0', 
+    staffIndex: '0',   
     date: '',
     time: '',
-    department: 'Opšta praksa'
+    service: 'Davanje terapije (Infuzija)', 
+    location: 'Ambulanta BW',
+    price: '' 
   })
 
   // ==========================================
@@ -152,7 +157,7 @@ const AdminPanel = () => {
   const handleStaffClose = () => setShowStaffModal(false)
   const handleStaffShowAdd = () => {
     setIsEditingStaff(false)
-    setStaffFormData({ id: null, firstName: '', lastName: '', email: '', phone: '', department: 'Opšta praksa', shift: 'Jutarnja', status: 'Aktivan' })
+    setStaffFormData({ id: null, firstName: '', lastName: '', email: '', phone: '', role: 'Medicinska sestra', shift: 'Jutarnja', salary: '', status: 'Aktivan' })
     setShowStaffModal(true)
   }
   const handleStaffShowEdit = (member) => {
@@ -181,10 +186,10 @@ const AdminPanel = () => {
     }
   }
 
-  // Schedule Handlers (NEW - UML "Kreiranje rasporeda")
+  // Schedule Handlers
   const handleScheduleClose = () => setShowScheduleModal(false)
   const handleScheduleShowAdd = () => {
-    setScheduleFormData({ patientIndex: '0', staffIndex: '0', date: '', time: '', department: 'Opšta praksa' })
+    setScheduleFormData({ patientIndex: '0', staffIndex: '0', date: '', time: '', service: 'Davanje terapije (Infuzija)', location: 'Ambulanta BW', price: '' })
     setShowScheduleModal(true)
   }
   const handleScheduleChange = (e) => {
@@ -194,7 +199,6 @@ const AdminPanel = () => {
   const handleSaveSchedule = (e) => {
     e.preventDefault()
     
-    // Get selected entities based on dropdown index positions
     const selectedPatient = patients[parseInt(scheduleFormData.patientIndex)]
     const selectedStaff = staff[parseInt(scheduleFormData.staffIndex)]
 
@@ -204,7 +208,9 @@ const AdminPanel = () => {
       staffName: `${selectedStaff.firstName} ${selectedStaff.lastName}`,
       date: scheduleFormData.date,
       time: scheduleFormData.time,
-      department: scheduleFormData.department,
+      service: scheduleFormData.service,
+      location: scheduleFormData.location,
+      price: scheduleFormData.price || 'Na upit', // Fallback ako nije uneta cena
       status: 'Zakazano'
     }
 
@@ -221,7 +227,6 @@ const AdminPanel = () => {
 
   return (
     <Container className='mt-5'>
-      {/* --- Panel Header --- */}
       <Row className='align-items-center mb-4'>
         <Col>
           <h2>Administratorski Kontrolni Centar</h2>
@@ -229,7 +234,6 @@ const AdminPanel = () => {
         </Col>
       </Row>
 
-      {/* --- TABS SYSTEM --- */}
       <Tabs defaultActiveKey="patients" id="admin-tabs" className="mb-4">
         
         {/* TAB 1: PATIENTS & FAMILIES */}
@@ -290,7 +294,7 @@ const AdminPanel = () => {
         <Tab eventKey="staff" title="Medicinsko Osoblje">
           <Card className="border-0 shadow-sm">
             <Card.Header className="bg-white d-flex justify-content-between align-items-center pt-4 pb-3">
-              <h5 className="mb-0 fw-bold" style={{ color: '#125447' }}>Registar zaposlenih medicinskih sestra/tehničara</h5>
+              <h5 className="mb-0 fw-bold" style={{ color: '#125447' }}>Registar zaposlenih radnika</h5>
               <Button variant="primary" onClick={handleStaffShowAdd} style={{ backgroundColor: '#1a7a68', border: 'none' }}>
                 + Registruj osoblje
               </Button>
@@ -301,9 +305,9 @@ const AdminPanel = () => {
                   <thead className="table-light">
                     <tr>
                       <th>Medicinski radnik</th>
-                      <th>Odeljenje</th>
+                      <th>Zvanje / Uloga</th>
                       <th>Kontakt podaci</th>
-                      <th>Smena</th>
+                      <th>Plata i Smena</th> {/* PROMENJENO */}
                       <th>Status profila</th>
                       <th className="text-end pe-4">Akcije</th>
                     </tr>
@@ -312,9 +316,12 @@ const AdminPanel = () => {
                     {staff.map(member => (
                       <tr key={member.id} className={member.status === 'Deaktiviran' ? 'table-secondary' : ''}>
                         <td><strong>{member.firstName} {member.lastName}</strong><br/><small className="text-muted">ID Radnika: #00{member.id}</small></td>
-                        <td><Badge bg="info" className="text-dark">{member.department}</Badge></td>
+                        <td><Badge bg="info" className="text-dark">{member.role}</Badge></td>
                         <td><small>📞 {member.phone}</small><br/><small>📧 {member.email}</small></td>
-                        <td><Badge bg={member.shift === 'Jutarnja' ? 'warning text-dark' : member.shift === 'Popodnevna' ? 'primary' : 'dark'}>{member.shift}</Badge></td>
+                        <td>
+                          <strong>{member.salary}</strong><br/>
+                          <Badge bg={member.shift === 'Jutarnja' ? 'warning text-dark' : member.shift === 'Popodnevna' ? 'primary' : 'dark'}>{member.shift}</Badge>
+                        </td>
                         <td><Badge bg={member.status === 'Aktivan' ? 'success' : 'danger'}>{member.status}</Badge></td>
                         <td className="text-end pe-4">
                           <Button variant="outline-primary" size="sm" className="me-2 mb-1" onClick={() => handleStaffShowEdit(member)}>✎ Izmeni</Button>
@@ -331,7 +338,7 @@ const AdminPanel = () => {
           </Card>
         </Tab>
 
-        {/* TAB 3: SCHEDULE MANAGEMENT (NEW - UML Requirement "Kreiranje rasporeda") */}
+        {/* TAB 3: SCHEDULE MANAGEMENT */}
         <Tab eventKey="schedules" title="Kreiranje Rasporeda">
           <Card className="border-0 shadow-sm">
             <Card.Header className="bg-white d-flex justify-content-between align-items-center pt-4 pb-3">
@@ -342,13 +349,14 @@ const AdminPanel = () => {
             </Card.Header>
             <Card.Body className="p-0">
               <div style={{ overflowX: 'auto', width: '100%' }}>
-                <Table hover responsive className="mb-0 align-middle" style={{ minWidth: '900px' }}>
+                <Table hover responsive className="mb-0 align-middle" style={{ minWidth: '950px' }}>
                   <thead className="table-light">
                     <tr>
                       <th>Pacijent</th>
-                      <th>Zaduženo medicinsko osoblje</th>
+                      <th>Zaduženo osoblje</th>
                       <th>Datum i vreme</th>
-                      <th>Odeljenje</th>
+                      <th>Usluga i Cena</th> {/* PROMENJENO */}
+                      <th>Lokacija</th>
                       <th>Status</th>
                       <th className="text-end pe-4">Akcije</th>
                     </tr>
@@ -359,7 +367,11 @@ const AdminPanel = () => {
                         <td className="fw-bold">{session.patientName}</td>
                         <td>👤 {session.staffName}</td>
                         <td>📅 {session.date} u {session.time} h</td>
-                        <td><Badge bg="info" className="text-dark">{session.department}</Badge></td>
+                        <td>
+                          {session.service}<br/>
+                          <Badge bg="info" className="text-dark mt-1">{session.price}</Badge>
+                        </td>
+                        <td><small>📍 {session.location}</small></td>
                         <td><Badge bg="success">{session.status}</Badge></td>
                         <td className="text-end pe-4">
                           <Button variant="outline-danger" size="sm" onClick={() => deleteSchedule(session.id)}>
@@ -375,7 +387,7 @@ const AdminPanel = () => {
           </Card>
         </Tab>
 
-        {/* TAB 4: VISIT REPORTS (NEW - UML Requirement "Pregled izveštaja o posetama") */}
+        {/* TAB 4: VISIT REPORTS */}
         <Tab eventKey="reports" title="Izveštaji o Posetama">
           <Card className="border-0 shadow-sm">
             <Card.Header className="bg-white pt-4 pb-3">
@@ -387,7 +399,7 @@ const AdminPanel = () => {
                   <Card.Body>
                     <Row className="mb-2">
                       <Col md={4}><strong>Pacijent:</strong> {rep.patientName}</Col>
-                      <Col md={4}><strong>Sestra/Tehničar:</strong> {rep.staffName}</Col>
+                      <Col md={4}><strong>Osoblje:</strong> {rep.staffName}</Col>
                       <Col md={4} className="text-md-end text-muted"><small>Datum posete: {rep.date}</small></Col>
                     </Row>
                     <div className="bg-light p-3 rounded mb-2">
@@ -395,7 +407,7 @@ const AdminPanel = () => {
                       <p className="mb-0 text-dark small">{rep.summary}</p>
                     </div>
                     <div className="p-1">
-                      <small className="text-muted"><strong>Komentar administratora/sestre:</strong> {rep.comment}</small>
+                      <small className="text-muted"><strong>Komentar administratora/osoblja:</strong> {rep.comment}</small>
                     </div>
                   </Card.Body>
                 </Card>
@@ -427,43 +439,76 @@ const AdminPanel = () => {
           <Form onSubmit={handleSaveStaff}>
             <Row><Col md={6}><Form.Group className="mb-3"><Form.Label>Ime</Form.Label><Form.Control name="firstName" value={staffFormData.firstName} onChange={handleStaffChange} required /></Form.Group></Col><Col md={6}><Form.Group className="mb-3"><Form.Label>Prezime</Form.Label><Form.Control name="lastName" value={staffFormData.lastName} onChange={handleStaffChange} required /></Form.Group></Col></Row>
             <Row><Col md={6}><Form.Group className="mb-3"><Form.Label>Email</Form.Label><Form.Control name="email" type="email" value={staffFormData.email} onChange={handleStaffChange} required /></Form.Group></Col><Col md={6}><Form.Group className="mb-3"><Form.Label>Telefon</Form.Label><Form.Control name="phone" value={staffFormData.phone} onChange={handleStaffChange} required /></Form.Group></Col></Row>
-            <Row><Col md={6}><Form.Group className="mb-4"><Form.Label>Odeljenje</Form.Label><Form.Select name="department" value={staffFormData.department} onChange={handleStaffChange}><option value="Opšta praksa">Opšta praksa</option><option value="Kardiologija">Kardiologija</option><option value="Dermatologija">Dermatologija</option><option value="Neurologija">Neurologija</option></Form.Select></Form.Group></Col><Col md={6}><Form.Group className="mb-4"><Form.Label>Smena</Form.Label><Form.Select name="shift" value={staffFormData.shift} onChange={handleStaffChange}><option value="Jutarnja">Jutarnja</option><option value="Popodnevna">Popodnevna</option><option value="Noćna">Noćna</option></Form.Select></Form.Group></Col></Row>
+            <Row>
+              <Col md={4}>
+                <Form.Group className="mb-4">
+                  <Form.Label>Zvanje / Uloga</Form.Label>
+                  <Form.Select name="role" value={staffFormData.role} onChange={handleStaffChange}>
+                    <option value="Negovateljica">Negovateljica</option>
+                    <option value="Medicinska sestra">Medicinska sestra</option>
+                    <option value="Geronto domaćica">Geronto domaćica</option>
+                    <option value="Lekar/Doktor">Lekar/Doktor</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-4">
+                  <Form.Label>Smena</Form.Label>
+                  <Form.Select name="shift" value={staffFormData.shift} onChange={handleStaffChange}>
+                    <option value="Jutarnja">Jutarnja</option>
+                    <option value="Popodnevna">Popodnevna</option>
+                    <option value="Noćna">Noćna</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              {/* DODATO: Unos plate u formu za osoblje */}
+              <Col md={4}>
+                <Form.Group className="mb-4">
+                  <Form.Label>Plata</Form.Label>
+                  <Form.Control name="salary" placeholder="npr. 90000 rsd" value={staffFormData.salary} onChange={handleStaffChange} required />
+                </Form.Group>
+              </Col>
+            </Row>
             <div className="d-flex justify-content-end gap-2 border-top pt-3"><Button variant="secondary" onClick={handleStaffClose}>Odustani</Button><Button variant="primary" type="submit" style={{ backgroundColor: '#1a7a68', border: 'none' }}>Potvrdi</Button></div>
           </Form>
         </Modal.Body>
       </Modal>
 
-      {/* --- MODAL 3: SCHEDULE FORM (NEW - Includes dynamic Patient & Nurse dropdown selectors) --- */}
-      <Modal show={showScheduleModal} onHide={handleScheduleClose} centered>
+      {/* --- MODAL 3: SCHEDULE FORM --- */}
+      <Modal show={showScheduleModal} onHide={handleScheduleClose} centered size="lg">
         <Modal.Header closeButton className="bg-light">
           <Modal.Title style={{ color: '#125447' }}>Planiranje i dodela termina</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSaveSchedule}>
             
-            {/* 1. Odabir pacijenta (UML Include Requirement) */}
-            <Form.Group className="mb-3">
-              <Form.Label>Izaberite pacijenta</Form.Label>
-              <Form.Select name="patientIndex" value={scheduleFormData.patientIndex} onChange={handleScheduleChange}>
-                {patients.filter(p => p.status === 'Aktivan').map((p, index) => (
-                  <option key={p.id} value={index}>
-                    {p.firstName} {p.lastName} ({p.familyName})
-                  </option>
-                ))}
-              </Form.Select>
-            </Form.Group>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Izaberite pacijenta</Form.Label>
+                  <Form.Select name="patientIndex" value={scheduleFormData.patientIndex} onChange={handleScheduleChange}>
+                    {patients.filter(p => p.status === 'Aktivan').map((p, index) => (
+                      <option key={p.id} value={index}>
+                        {p.firstName} {p.lastName} ({p.familyName})
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
 
-            {/* 2. Odabir medicinske sestre (UML Include Requirement) */}
-            <Form.Group className="mb-3">
-              <Form.Label>Izaberite slobodno medicinsko osoblje</Form.Label>
-              <Form.Select name="staffIndex" value={scheduleFormData.staffIndex} onChange={handleScheduleChange}>
-                {staff.filter(s => s.status === 'Aktivan').map((s, index) => (
-                  <option key={s.id} value={index}>
-                    {s.firstName} {s.lastName} - {s.department} ({s.shift} smena)
-                  </option>
-                ))}
-              </Form.Select>
-            </Form.Group>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Izaberite slobodno osoblje</Form.Label>
+                  <Form.Select name="staffIndex" value={scheduleFormData.staffIndex} onChange={handleScheduleChange}>
+                    {staff.filter(s => s.status === 'Aktivan').map((s, index) => (
+                      <option key={s.id} value={index}>
+                        {s.firstName} {s.lastName} - {s.role} ({s.shift} smena)
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
 
             <Row>
               <Col md={6}>
@@ -480,15 +525,37 @@ const AdminPanel = () => {
               </Col>
             </Row>
 
-            <Form.Group className="mb-4">
-              <Form.Label>Tip zdravstvene nege</Form.Label>
-              <Form.Select name="department" value={scheduleFormData.department} onChange={handleScheduleChange}>
-                <option value="Opšta praksa">Opšta praksa (Rutinski pregled)</option>
-                <option value="Kardiologija">Kardiologija (EKG i pritisak)</option>
-                <option value="Dermatologija">Dermatologija (Nega rana)</option>
-                <option value="Neurologija">Neurologija (Neurološki testovi)</option>
-              </Form.Select>
-            </Form.Group>
+            <Row>
+              <Col md={5}>
+                <Form.Group className="mb-4">
+                  <Form.Label>Vrsta medicinske usluge</Form.Label>
+                  <Form.Select name="service" value={scheduleFormData.service} onChange={handleScheduleChange}>
+                    <option value="Davanje terapije (Infuzija)">Davanje terapije (Infuzija / Injekcija)</option>
+                    <option value="Nega rane / Previjanje">Nega rane / Previjanje</option>
+                    <option value="Gerontološka nega">Gerontološka nega (Pomoć u kući)</option>
+                    <option value="Lekarski pregled">Lekarski pregled na terenu</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+
+              <Col md={4}>
+                <Form.Group className="mb-4">
+                  <Form.Label>Lokacija pružanja usluge</Form.Label>
+                  <Form.Select name="location" value={scheduleFormData.location} onChange={handleScheduleChange}>
+                    <option value="Ambulanta BW">Ambulanta (Beograd na vodi)</option>
+                    <option value="Kućna poseta">Kućna poseta (Adresa pacijenta)</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              
+              {/* DODATO: Unos cene u formu za zakazivanje */}
+              <Col md={3}>
+                <Form.Group className="mb-4">
+                  <Form.Label>Cena (Opciono)</Form.Label>
+                  <Form.Control name="price" placeholder="npr. 6000 rsd" value={scheduleFormData.price} onChange={handleScheduleChange} />
+                </Form.Group>
+              </Col>
+            </Row>
 
             <div className="d-flex justify-content-end gap-2 border-top pt-3">
               <Button variant="secondary" onClick={handleScheduleClose}>Odustani</Button>

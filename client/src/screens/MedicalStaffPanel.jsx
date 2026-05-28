@@ -4,20 +4,22 @@ import { Container, Row, Col, Card, Table, Button, Badge, Modal, Form } from 're
 const MedicalStaffPanel = () => {
 
   // Mock data: Pending requests from patients (waiting for approval)
+  // PROMENA: 'department' je zamenjen sa 'service' i ubačene su realne usluge sa kucnanega.co
   const [pendingRequests, setPendingRequests] = useState([
-    { id: 1, patientName: 'Jovan Jovanović', date: '2026-06-01', time: '09:00', department: 'Opšta praksa', location: 'Novi Sad, Bulevar Evrope 50, 6', price: '5000 rsd' },
-    { id: 2, patientName: 'Milica Nikolić', date: '2026-06-02', time: '11:30', department: 'Kardiologija', location: 'Beograd, Maksima Gorkog 17 | Voždovac, 23', price: '12000 rsd' },
-    { id: 3, patientName: 'Petar Petrović', date: '2026-06-05', time: '15:00', department: 'Neurologija', location: 'Novi Beograd, Vasilja Djurovića Vaka | Blok 49, 2', price: '13500 rsd'}
+    { id: 1, patientName: 'Jovan Jovanović', date: '2026-06-01', time: '09:00', service: 'Davanje terapije (Infuzija)', location: 'Novi Sad, Bulevar Evrope 50, 6', price: '5000 rsd' },
+    { id: 2, patientName: 'Milica Nikolić', date: '2026-06-02', time: '11:30', service: 'Nega rane / Previjanje', location: 'Beograd, Maksima Gorkog 17 | Voždovac, 23', price: '12000 rsd' },
+    { id: 3, patientName: 'Petar Petrović', date: '2026-06-05', time: '15:00', service: 'Gerontološka nega', location: 'Novi Beograd, Vasilja Djurovića Vaka | Blok 49, 2', price: '13500 rsd'}
   ])
 
   // Mock data: Today's schedule / shift tasks
+  // PROMENA: Uklonjeno "Odeljenje B", stavljeno fokusiranje na terenske usluge
   const [todaySchedule, setTodaySchedule] = useState([
-    { id: 101, time: '08:00', task: 'Jutarnja vizita - Odeljenje B', patient: 'Više pacijenata', status: 'Završeno' },
-    { id: 102, time: '10:00', task: 'Redovna kućna poseta', patient: 'Marko Marković', status: 'U toku' },
+    { id: 101, time: '08:00', task: 'Jutarnja gerontološka nega', patient: 'Više pacijenata', status: 'Završeno' },
+    { id: 102, time: '10:00', task: 'Lekarski pregled na terenu', patient: 'Marko Marković', status: 'U toku' },
     { id: 103, time: '13:00', task: 'Davanje terapije', patient: 'Ana Ilić', status: 'Zakazano' }
   ])
 
-  // --- REPORT MODAL STATES (UML Requirement: Unos izveštaja i komentara) ---
+  // --- REPORT MODAL STATES ---
   const [showReportModal, setShowReportModal] = useState(false)
   const [activeTask, setActiveTask] = useState(null)
   const [reportSummary, setReportSummary] = useState('')
@@ -30,14 +32,15 @@ const MedicalStaffPanel = () => {
     const newTask = {
       id: Date.now(),
       time: requestToApprove.time,
-      task: `Pregled - ${requestToApprove.department} (${requestToApprove.location})`,
+      // PROMENA: Sada se u zadatku ispisuje vrsta usluge umesto odeljenja
+      task: `Usluga: ${requestToApprove.service} (${requestToApprove.location})`,
       patient: requestToApprove.patientName,
       status: 'Zakazano'
     }
 
     setTodaySchedule([...todaySchedule, newTask])
     setPendingRequests(pendingRequests.filter(req => req.id !== id))
-    alert(`Pregled za pacijenta ${requestToApprove.patientName} je odobren i prebačen u raspored.`)
+    alert(`Zahtev za uslugu pacijentu ${requestToApprove.patientName} je odobren i prebačen u raspored.`)
   }
 
   // DELETE operation: Reject/Cancel a patient's request entirely
@@ -58,29 +61,25 @@ const MedicalStaffPanel = () => {
   const handleSaveReport = (e) => {
     e.preventDefault()
 
-    // 1. In a real app, send the report (reportSummary & reportComment) to the backend/Admin Panel here
-
-    // 2. Mark the specific task as "Završeno" in the current schedule
+    // Mark the specific task as "Završeno" in the current schedule
     const updatedSchedule = todaySchedule.map(task => 
       task.id === activeTask.id ? { ...task, status: 'Završeno' } : task
     )
     
     setTodaySchedule(updatedSchedule)
     setShowReportModal(false)
-    alert('Izveštaj o poseti je uspešno zaveden u sistem.')
+    alert('Izveštaj o pruženoj usluzi je uspešno zaveden u sistem.')
   }
 
-  // --- SHIFT COMPLETION LOGIC (UML Requirement: Završetak smene) ---
+  // --- SHIFT COMPLETION LOGIC ---
   const handleEndShift = () => {
-    // Check if there are any tasks left that are NOT finished
     const unfinishedTasks = todaySchedule.filter(task => task.status !== 'Završeno')
     
     if (unfinishedTasks.length > 0) {
-      alert(`Ne možete završiti smenu. Imate još ${unfinishedTasks.length} nezavršenih obaveza u rasporedu.`)
+      alert(`Ne možete završiti smenu. Imate još ${unfinishedTasks.length} nezavršenih terenskih obaveza u rasporedu.`)
     } else {
       if(window.confirm('Da li ste sigurni da želite da završite smenu i odjavite se sa sistema?')) {
         alert('Smena uspešno završena. Hvala na radu!')
-        // Here you would typically log the user out and redirect to the login screen
       }
     }
   }
@@ -97,8 +96,8 @@ const MedicalStaffPanel = () => {
       {/* --- Panel Header --- */}
       <Row className="align-items-center mb-4">
         <Col>
-          <h2>Panel Medicinskog Osoblja</h2>
-          <p className="text-muted">Pregled smene, trijaža i odobravanje zahteva pacijenata.</p>
+          <h2>Panel Terenskog Osoblja</h2>
+          <p className="text-muted">Pregled smene, prijem zahteva za negu i odobravanje termina pacijenata.</p>
         </Col>
         <Col className="text-end">
           <Button variant="danger" size="lg" onClick={handleEndShift}>
@@ -112,7 +111,7 @@ const MedicalStaffPanel = () => {
         <Col lg={7} className="mb-4">
           <Card className="shadow-sm border-0 h-100">
             <Card.Header className="bg-white border-bottom-0 pt-4 pb-0">
-              <h5 className="fw-bold text-danger">Zahtevi na čekanju (Trijaža)</h5>
+              <h5 className="fw-bold text-danger">Pristigli zahtevi za usluge (Trijaža)</h5>
             </Card.Header>
             <Card.Body style={{ maxHeight: '600px', overflowY: 'auto', padding: '1rem' }}>
               <div style={{ overflowX: 'auto', width: '100%' }}>
@@ -121,7 +120,8 @@ const MedicalStaffPanel = () => {
                     <tr>
                       <th>Pacijent</th>
                       <th>Datum i vreme</th>
-                      <th>Odeljenje</th>
+                      {/* PROMENA: Odeljenje -> Vrsta usluge */}
+                      <th>Vrsta usluge</th>
                       <th>Lokacija</th>
                       <th className="text-end">Akcije</th>
                     </tr>
@@ -131,7 +131,7 @@ const MedicalStaffPanel = () => {
                       <tr key={request.id}>
                         <td className="fw-bold">{request.patientName}</td>
                         <td>{request.date} <br/> <small className="text-muted">{request.time}</small></td>
-                        <td>{request.department}</td>
+                        <td>{request.service}</td>
                         <td style={{ whiteSpace: 'normal', minWidth: '200px' }}>
                           <small>{request.location}</small> <br/>
                           <Badge bg="info">{request.price}</Badge>
@@ -156,7 +156,7 @@ const MedicalStaffPanel = () => {
         <Col lg={5} className="mb-4">
           <Card className="shadow-sm border-0 h-100 bg-light">
             <Card.Header className="bg-light border-bottom-0 pt-4 pb-0">
-              <h5 className="fw-bold" style={{ color: '#125447' }}>Raspored za današnju smenu</h5>
+              <h5 className="fw-bold" style={{ color: '#125447' }}>Terenski raspored za današnju smenu</h5>
             </Card.Header>
             <Card.Body style={{ maxHeight: '600px', overflowY: 'auto' }}>
               {todaySchedule.map((task) => (
@@ -165,10 +165,9 @@ const MedicalStaffPanel = () => {
                     <span className="fw-bold text-dark">{task.time}</span>
                     <Badge bg={getTaskBadgeColor(task.status)}>{task.status}</Badge>
                   </div>
-                  <p className="mb-1 text-muted"><strong>Obaveza:</strong> {task.task}</p>
+                  <p className="mb-1 text-muted"><strong>Usluga:</strong> {task.task}</p>
                   <p className="mb-2 text-dark small"><strong>Pacijent:</strong> {task.patient}</p>
                   
-                  {/* UML Action: Unos izveštaja (Only visible if task is not finished) */}
                   {task.status !== 'Završeno' && (
                     <div className="text-end mt-3 border-top pt-2">
                       <Button variant="outline-primary" size="sm" onClick={() => openReportModal(task)}>
@@ -178,33 +177,33 @@ const MedicalStaffPanel = () => {
                   )}
                 </div>
               ))}
-              {todaySchedule.length === 0 && <p className="text-center text-muted mt-3">Nemate zakazanih obaveza.</p>}
+              {todaySchedule.length === 0 && <p className="text-center text-muted mt-3">Nemate zakazanih terenskih obaveza.</p>}
             </Card.Body>
           </Card>
         </Col>
       </Row>
 
-      {/* --- REPORT ENTRY MODAL (UML Requirement) --- */}
+      {/* --- REPORT ENTRY MODAL --- */}
       <Modal show={showReportModal} onHide={() => setShowReportModal(false)} size="lg" centered>
         <Modal.Header closeButton className="bg-light">
-          <Modal.Title style={{ color: '#125447' }}>Unos medicinskog izveštaja o poseti</Modal.Title>
+          <Modal.Title style={{ color: '#125447' }}>Unos izveštaja o pruženoj nezi / usluzi</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {activeTask && (
             <div className="mb-4 p-3 bg-light rounded border">
-              <strong>Detalji obaveze:</strong> <br/>
+              <strong>Detalji zadatka:</strong> <br/>
               Pacijent: {activeTask.patient} <br/>
-              Zadatak: {activeTask.task} u {activeTask.time}h
+              Usluga: {activeTask.task} u {activeTask.time}h
             </div>
           )}
           
           <Form onSubmit={handleSaveReport}>
             <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">Glavni izveštaj o poseti</Form.Label>
+              <Form.Label className="fw-bold">Glavni izveštaj</Form.Label>
               <Form.Control 
                 as="textarea" 
                 rows={4} 
-                placeholder="Unesite zdravstveno stanje pacijenta, primenjenu terapiju i vitalne parametre..."
+                placeholder="Unesite zdravstveno stanje pacijenta, detalje o primenjenoj nezi ili terapiji..."
                 value={reportSummary}
                 onChange={(e) => setReportSummary(e.target.value)}
                 required
@@ -216,7 +215,7 @@ const MedicalStaffPanel = () => {
               <Form.Control 
                 as="textarea" 
                 rows={2} 
-                placeholder="Unesite zapažanja, ponašanje pacijenta ili napomene za administratora..."
+                placeholder="Unesite zapažanja, potrebe za narednu posetu ili napomene za administratora..."
                 value={reportComment}
                 onChange={(e) => setReportComment(e.target.value)}
               />

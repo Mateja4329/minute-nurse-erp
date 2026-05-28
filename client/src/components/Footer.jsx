@@ -53,6 +53,20 @@ const Footer = () => {
                           🌐 Zvanični website
                         </a>
                       </li>
+                      <li className="my-2">
+                        {/* rel="noopener noreferrer" is a mandatory engineering standard
+                         when a link is opened in a new window (target="_blank")
+                          because it prevents security breaches (phishing attacks) */}
+                        <a 
+                          href="https://kucnanega.co/" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={linkStyle}
+                          className="footer-link"
+                        >
+                          🏡 Kućna nega
+                        </a>
+                      </li>
                     </ul>
                   </div>
                 </Col>

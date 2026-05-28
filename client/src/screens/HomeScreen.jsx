@@ -26,7 +26,7 @@ const HomeScreen = () => {
     // 'bg-light' adds a soft gray background, 'p-5' adds padding on all sides,
     //  'rounded-3' wraps the edges
     <Container className="mt-5">
-      <div className="p-5 mb-4 bg-light rounded-3 text-center">
+      <div className="p-5 mb-4 bg-light rounded-3 border shadow-sm text-center">
         <Container fluid className="py-5">
           <h1 className="display-5 fw-bold">Dobrodošli u MinuteNurse ERP</h1>
           <p className="col-md-12 fs-4 text-muted">
@@ -49,10 +49,10 @@ const HomeScreen = () => {
       {/* informative cards whicg describe the roles in the system */}
       <Row className="align-items-md-stretch mt-4">
         <Col md={4} className="mb-3">
-            <Card className="h-100 p-3">
-                <Card.Body>
-                    <Card.Title className="fw-bold">Za Pacijente</Card.Title>
-                    <Card.Text className="text-muted">
+            <Card className="h-100  border-0">
+                <Card.Body style={{backgroundImage: 'url(/patient_image.jpg)', backgroundSize: '100%', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: '#f8f9fa'}}>
+                    <Card.Title className="fw-bold" style={{backgroundColor: 'rgba(255, 255, 255, 0.5)', padding: '10px', borderRadius: '5px'}}>Za Pacijente</Card.Title>
+                    <Card.Text className="text-muted" style={{backgroundColor: 'rgba(255, 255, 255, 0.6)', padding: '15px', borderRadius: '5px'}}>
                         Brzo zakazivanje pregleda, uvid u istoriju bolesti i 
                         direktna komunikacija sa medicinskim timom.
                     </Card.Text>
@@ -60,20 +60,20 @@ const HomeScreen = () => {
             </Card>
         </Col>
         <Col md={4} className="mb-3">
-          <Card className="h-100 p-3">
-            <Card.Body>
-              <Card.Title className="fw-bold">Za Medicinsko Osoblje</Card.Title>
-              <Card.Text className="text-muted">
+          <Card className="h-100">
+            <Card.Body style={{backgroundImage: 'url(/medical-staff-image.jpg)', backgroundSize: '100%', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: '#f8f9fa'}}>
+              <Card.Title className="fw-bold" style={{backgroundColor: 'rgba(255, 255, 255, 0.5)', padding: '10px', borderRadius: '5px'}}>Za Medicinsko Osoblje</Card.Title>
+              <Card.Text className="text-muted" style={{backgroundColor: 'rgba(255, 255, 255, 0.6)', padding: '15px', borderRadius: '5px'}}>
                 Efikasno vođenje smena, upravljanje zdravstvenim kartonima i trenutni pristup hitnim zadacima.
               </Card.Text>
             </Card.Body>
           </Card>
         </Col>
         <Col md={4} className="mb-3">
-          <Card className="h-100 p-3">
-            <Card.Body>
-              <Card.Title className="fw-bold">Za Administratore</Card.Title>
-              <Card.Text className="text-muted">
+          <Card className="h-100">
+            <Card.Body style={{backgroundImage: 'url(/admi_image.jpg)', backgroundSize: '100%', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: '#f8f9fa'}}>
+              <Card.Title className="fw-bold" style={{backgroundColor: 'rgba(255, 255, 255, 0.5)', padding: '10px', borderRadius: '5px'}}>Za Administratore</Card.Title>
+              <Card.Text className="text-muted" style={{backgroundColor: 'rgba(255, 255, 255, 0.6)', padding: '15px', borderRadius: '5px'}}>
                 Potpuna kontrola nad korisničkim nalozima, CRUD operacije nad bazom podataka i praćenje rada sistema.
               </Card.Text>
             </Card.Body>
@@ -87,9 +87,9 @@ const HomeScreen = () => {
         {/* Left column: live avaliable announcements */}
         <Col md={6} className="mb-4">
           <h3 className="fw-bold mb-3">Aktuelna obaveštenja</h3>
-          <ListGroup variant="flush">
+          <ListGroup variant="flush" border="dark" className="bg-white rounded shadow-sm p-3">
             {announcements.map((announcement) => (
-              <ListGroup.Item key={announcement.id} className="px-0 py-3">
+              <ListGroup.Item key={announcement.id} className="px-3 py-3">
                 <div className="fw-bold text-primary small mb-1">{announcement.date}</div>
                 <div>{announcement.text}</div>
               </ListGroup.Item>
@@ -99,7 +99,7 @@ const HomeScreen = () => {
 
         {/* Right column: contact form for unregistered */}
         <Col md={6}>
-          <Card className="bg-light border-0 p-4">
+          <Card className="bg-light rounded shadow-sm border-0 p-4">
             <h3 className="fw-bold mb-3">Imate pitanje?</h3>
             <p className="text-muted small mb-4">
               Niste registrovani, a potrebna Vam je informacija? Pošaljite nam brzi upit i naša dežurna služba će Vam odgovoriti.
