@@ -7,22 +7,23 @@ body {
   -moz-osx-font-smoothing: grayscale;
 
   background: linear-gradient(-45deg, #ffffff, #f0f4f3, #e0ebe8, #f8f9fa);
-  background-size: 400% 400%;
+  background-size: 100% 100%;
 
-  animation: breathingBackground 10s ease infinite;
+  animation: breathingBackground 15s ease-in-out infinite;
+  will-change: opacity;
 
   min-height: 100vh;
 }
 
 @keyframes breathingBackground {
   0% {
-    background-position: 0% 50%;
+    opacity: 1;
   }
   50% {
-    background-position: 100% 50%;
+    opacity: 0.95;
   }
   100% {
-    background-position: 0% 50%;
+    opacity: 1;
   }
 }
 
@@ -30,3 +31,45 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.hover-card-animate{
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-card-animate:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(18, 84, 71, 0.15) !important; 
+  cursor: auto;
+}
+
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUpAnim 0.6s ease-out forwards;
+}
+
+@keyframes fadeInUpAnim {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/*
+.fade-on-scroll {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  will-change: opacity, transform;
+} */
+
+
+/* .fade-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+} */
+
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.3s; }
+.delay-3 { animation-delay: 0.5s; }
+.delay-4 { animation-delay: 0.7s; }
