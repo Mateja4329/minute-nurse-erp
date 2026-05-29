@@ -34,7 +34,7 @@ const PatientPanel = () => {
       return;
     }
 
-    alert(`Vaša recenzija je uspešno poslata! Odgovorićemo Vam na email: ${patientFeedback}`);
+    alert(`Vaša recenzija je uspešno poslata! Odgovorićemo Vam na email {/* Later will add patient's email when I implement the database */}`);
     setPatientFeedback('');
     setStars(0);
   }
