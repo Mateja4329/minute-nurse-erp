@@ -551,8 +551,8 @@ const AdminPanel = () => {
               {/* DODATO: Unos cene u formu za zakazivanje */}
               <Col md={3}>
                 <Form.Group className="mb-4">
-                  <Form.Label>Cena (Opciono)</Form.Label>
-                  <Form.Control name="price" placeholder="npr. 6000 rsd" value={scheduleFormData.price} onChange={handleScheduleChange} />
+                  <Form.Label>Cena</Form.Label>
+                  <Form.Control name="price" placeholder="npr. 6000 rsd" value={scheduleFormData.price} onChange={handleScheduleChange} required/>
                 </Form.Group>
               </Col>
             </Row>

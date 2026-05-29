@@ -205,6 +205,7 @@ const MedicalStaffPanel = () => {
                 rows={4} 
                 placeholder="Unesite zdravstveno stanje pacijenta, detalje o primenjenoj nezi ili terapiji..."
                 value={reportSummary}
+                style={{ resize: 'none' }}
                 onChange={(e) => setReportSummary(e.target.value)}
                 required
               />
@@ -217,6 +218,7 @@ const MedicalStaffPanel = () => {
                 rows={2} 
                 placeholder="Unesite zapažanja, potrebe za narednu posetu ili napomene za administratora..."
                 value={reportComment}
+                style={{ resize: 'none' }}
                 onChange={(e) => setReportComment(e.target.value)}
               />
             </Form.Group>
