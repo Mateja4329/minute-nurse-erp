@@ -1,2 +1,2 @@
-# minute-nurse-erp
+# minute-nurse-erp (WIP)
 ERP system for digitization of home care, visit records and medical shift management.
