@@ -5,9 +5,15 @@ import {Link, useNavigate} from 'react-router-dom'
 
 const RegisterScreen = () => {
     // first, we create states for all the form fields.
-    const [name, setName] = useState('')
+    const [f_name, setFirstName] = useState('')
+    const [l_name, setLastName] = useState('')
+    
     const [email, setEmail] = useState('')
-    const [role, setRole] = useState('patient') // default role is 'patient'
+    const [phone, setPhone] = useState('')
+    const [address, setAddress] = useState('')
+
+    const [role, setRole] = useState('Patient') // default role is 'patient'
+
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
 
@@ -15,19 +21,55 @@ const RegisterScreen = () => {
     const navigate = useNavigate()
 
     // Function which triggers when the user clicks the "Register" button
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault() // Prevent the default form submission behavior
 
-        if (password !== confirmPassword) {
-            alert('Lozinke se ne poklapaju!')
-            return
+        // We accept the data from the form and add it to UserCreateDTO object
+        const userData = {
+            first_name: f_name,
+            last_name: l_name,
+            email: email,
+            phone_number: phone,
+            address: address,
+            role: role,
+            password: password,
+            confirm_password: confirmPassword
         }
 
-        console.log("Registering user with details: ", {name, email, role, password})
+        try{
+            // Now we send POST request to the FastAPI
+            const response = await fetch("http://localhost:8000/api/user/Register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(userData)
+            })
+            // for safety, we will check the password again
+            // its faster on frontend than waiting for the backend to respond with an error
+            if (password !== confirmPassword){
+                console.log("Passwords do not match!")
+                alert("Lozinke se ne poklapaju!")
+                return
+            }
 
-        // after successful registration, navigate the user to the login page
-        alert('Registracija uspješna! Sada se možete prijaviti.')
-        navigate('/login')
+            // We check if API returned an error (e.g. user already exists or passwords don't match)
+            if(!response.ok){
+                const errorData = await response.json()
+                console.error("Error during registration: ", errorData)
+                alert("Error: " + JSON.stringify(errorData.detail))
+                return
+            }
+            // If registration is successful, we return the UserResponseDTO object
+            const successData = await response.json()
+            console.log("Registration successful: ", successData)
+            alert('Registracija uspješna! Sada se možete prijaviti.')
+            navigate('/login')
+
+        } catch (error) {
+            console.error("Network error: ", error)
+            alert("Došlo je do greške prilikom registracije. Molimo pokušajte ponovo.")
+        }
     }
 
   return (
@@ -38,18 +80,32 @@ const RegisterScreen = () => {
             <Col xs={12} md={6}>
                 <h2 className='mb-4'>Kreirajte nalog</h2>
                 {/* Form component from Bootstrap inherits our handleSubmit function */}
+                {/* Field for first name */}
                 <Form onSubmit={handleSubmit}>
-                    <Form.Group controlId='name' className='mb-3'>
-                        <Form.Label>Ime i prezime</Form.Label>
+                    <Form.Group controlId='f_name' className='mb-3'>
+                        <Form.Label>Ime</Form.Label>
                         <Form.Control
                             type='text'
-                            placeholder='Unesite ime i prezime'
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            placeholder='Unesite ime'
+                            value={f_name}
+                            onChange={(e) => setFirstName(e.target.value)}
                             required
                             // HTML5 validation: the field must be filled out before submitting
                         />
                     </Form.Group>
+
+                    {/* Field for last name */}
+                    <Form.Group controlId='l_name' className='mb-3'>
+                        <Form.Label>Prezime</Form.Label>
+                        <Form.Control
+                            type='text'
+                            placeholder='Unesite prezime'
+                            value={l_name}
+                            onChange={(e) => setLastName(e.target.value)}
+                            required
+                        />
+                    </Form.Group>
+
 
                     {/* Field for email address */}
                     <Form.Group className="mb-3" controlId="email">
@@ -62,14 +118,37 @@ const RegisterScreen = () => {
                         required
                       />
                     </Form.Group>
-                
+
+                    {/* Field for phone number */}
+                    <Form.Group controlId = 'phone' className = 'mb_3'>
+                        <Form.Label>Broj telefona</Form.Label>
+                        <Form.Control
+                            type = 'text'
+                            placeholder = 'Unesite broj telefona'
+                            value = {phone}
+                            onChange = {(e) => setPhone(e.target.value)}
+                            required
+                        />
+                    </Form.Group>
+
+                    {/* Field for address */}
+                    <Form.Group controlId = 'address' className = 'mb_3'>
+                        <Form.Label>Adresa</Form.Label>
+                        <Form.Control
+                            type = 'text'
+                            placeholder = 'Unesite adresu'
+                            value = {address}
+                            onChange = {(e) => setAddress(e.target.value)}
+                            required
+                        />
+                    </Form.Group>
 
                     {/* Field for selecting user role (patient or medical staff) */}
                     <Form.Group className="mb-3" controlId="role">
                         <Form.Label>Izaberite ulogu</Form.Label>
                         <Form.Select value={role} onChange={(e) => setRole(e.target.value)}>
-                            <option value="patient">Pacijent</option>
-                            <option value="medical-staff">Medicinsko osoblje</option>
+                            <option value="Patient">Pacijent</option>
+                            <option value="MedicalStaff">Medicinsko osoblje</option>
                         </Form.Select>
                     </Form.Group>
 
@@ -105,7 +184,7 @@ const RegisterScreen = () => {
                 {/* Link to the login page for users who already have an account */}
                 <Row className='mt-3'>
                     <Col>
-                        Već imate nalog? <Link to='/'>Prijavite se</Link>
+                        Već imate nalog? <Link to='/login'>Prijavite se</Link>
                     </Col>
                 </Row>
             </Col>

@@ -1,0 +1,22 @@
+version: '3.8'
+# This docker-compose file sets up a PostgreSQL database service for the Minute Nurse application. 
+# It uses the official PostgreSQL 15 image and configures the database with a username, password,
+# and database name. The database data is persisted using a Docker volume named `pgdata`.
+# The service is set to always restart in case of failure, and it maps the default 
+# PostgreSQL port (5432) to the host machine for external access.
+services:
+  db:
+    image: postgres:16
+    container_name: minute_nurse
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

@@ -3,7 +3,7 @@ import { Container, Row, Col, Card, Table, Button, Badge, Modal, Form } from 're
 
 const PatientPanel = () => {
 
-  // Mock data: scheduled examinations (Ažurirano sa uslugama, cenom i lokacijom)
+  // Mock data: scheduled examinations
   const [examinations, setExaminations] = useState([
       { id: 1, date: '2026-05-30', time: '10:00', doctor: 'Dr. Milan Jovanović', service: 'Lekarski pregled', location: 'Kućna poseta', price: '6000 rsd', status: 'Zakazano' },
       { id: 2, date: '2026-06-05', time: '14:30', doctor: 'Sestra Ana Nikolić', service: 'Nega rane / Previjanje', location: 'Ambulanta BW', price: '3000 rsd', status: 'Na čekanju' }
@@ -20,7 +20,7 @@ const PatientPanel = () => {
   const [newDate, setNewDate] = useState('')
   const [newTime, setNewTime] = useState('')
   const [newService, setNewService] = useState('Davanje terapije (Infuzija)')
-  const [newLocation, setNewLocation] = useState('Ambulanta BW') // NOVO: State za lokaciju
+  const [newLocation, setNewLocation] = useState('Ambulanta BW')
 
   // Send feedback and review (chat box)
   const [patientFeedback, setPatientFeedback] = useState('')
@@ -55,17 +55,17 @@ const PatientPanel = () => {
   const scheduleAnAppointment = (e) => {
     e.preventDefault()
 
-    // Jednostavna logika za simulaciju cene na osnovu izabrane usluge
+    // Simulate price calculation based on the selected service and location
     let calculatedPrice = 'Na upit'
     if (newService.includes('terapije')) calculatedPrice = '5000 rsd'
     if (newService.includes('Nega rane')) calculatedPrice = '3000 rsd'
     if (newService.includes('Gerontološka')) calculatedPrice = '4500 rsd'
     if (newService.includes('Lekarski pregled')) calculatedPrice = '6000 rsd'
 
-    // Ako je kućna poseta, možemo simulirati dodatak na cenu izlaska na teren
+    // If it's a home visit, we add an extra fee to the base price (if the price is not "Na upit")
     if (newLocation === 'Kućna poseta' && calculatedPrice !== 'Na upit') {
-      const basePrice = parseInt(calculatedPrice.split(' ')[0])
-      calculatedPrice = `${basePrice + 1000} rsd` // +1000 rsd za izlazak na teren
+      const basePrice = parseInt(calculatedPrice.split(' ')[0]) // Extract the numeric part of the price
+      calculatedPrice = `${basePrice + 1000} rsd` // +1000 rsd for home visit fee
     }
 
     // Create a new examination object
@@ -76,7 +76,7 @@ const PatientPanel = () => {
       service: newService,
       location: newLocation,
       price: calculatedPrice,
-      doctor: 'Dodeljuje se...', 
+      doctor: 'Dodeljuje se...',
       status: 'Na čekanju'
     }
 

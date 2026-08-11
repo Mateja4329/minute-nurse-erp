@@ -5,9 +5,11 @@ import { useState } from 'react'
 
 const HomeScreen = () => {
 
+  // State variables for handling the guest inquiry form
   const [query, setQuery] = useState('')
   const [guestEmail, setGuestEmail] = useState('')
 
+  // Sample announcements data - in a real application, this would likely come from an API
   const announcements = [
     { id: 1, date: '28. Maj 2026.', text: 'Počela je sezona vakcinacije protiv gripa. Zakažite svoj termin.' },
     { id: 2, date: '25. Maj 2026.', text: 'Novo radno vreme laboratorije: od 07:00 do 15:00 svakog radnog dana.' },
@@ -107,7 +109,7 @@ const HomeScreen = () => {
             <Form onSubmit={sendAnInquiry}>
               <Form.Group className="mb-3" controlId="guestEmail">
                 <Form.Control 
-                  type="email" 
+                  type="email"
                   placeholder="Vaša email adresa" 
                   value={guestEmail}
                   onChange={(e) => setGuestEmail(e.target.value)}

@@ -12,8 +12,8 @@ const AdminPanel = () => {
       lastName: 'Marković', 
       familyName: 'Porodica Marković', 
       address: 'Bulevar Evrope 50, Novi Sad', 
-      phone: '+381601234567', 
-      email: 'marko@gmail.com', 
+      phone: '+381601234567',
+      email: 'marko@gmail.com',
       medicalNotes: 'Alergija na penicilin. Redovna terapija za pritisak.',
       status: 'Aktivan' 
     },

@@ -24,7 +24,7 @@ class User(Base):
 
     role = Column(Enum(UserRole), default = UserRole.PATIENT, nullable = False)
 
-    # this line of code tells python how to move trough the tables, from one to another in the db
+    # this line of code tells python how to move through the tables, from one to another in the db
     # uselist tells the database that this is a 1 on 1 relationship
     # cascade = "all, delete-orphan" protects the db from "trash". There are no "orphans" in the db if something gets deleted
     patient_profile = relationship("PatientProfile", back_populates = "user", uselist = False, cascade = "all, delete-orphan")

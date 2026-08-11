@@ -1,27 +1,35 @@
-import os
-import sys
-from fastapi import FastAPI, HTTPException
-from sentry_sdk.envelope import Item
+from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
-# Create an instance of the class for FastAPI
-app = FastAPI()
+from infrastructure.database import engine, Base
 
-items = []
+from infrastructure.entities.profiles.patient_profile import PatientProfile
+from infrastructure.entities.profiles.staff_profile import StaffProfile
+from infrastructure.entities.user import User
 
-# Now define a basic route
-@app.get("/") # This is the default "home" route (I think)
+from api.routers.user_controller import router as user_controller
+
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+app = FastAPI(title="MinuteNurse API", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    # our frontend uses CRA (create react app), and not Vita. Maybe will change in the future
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"], # allows all api methods, like GET, POST, UPDATE, DELETE...
+    allow_headers=["*"] # Allows all headers (even tokens)
+)
+
+app.include_router(user_controller)
+
+@app.get("/")
 def read_root():
-    return{"Message": "Hello World"}
-
-@app.post("/items")
-def create_item(item: str):
-    items.append(item)
-    return items
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int) -> str:
-    try:
-        item = items[item_id]
-        return item
-    except IndexError:
-        raise HTTPException(status_code=404, detail=f"Item {item_id} not found")
+    return {"message": "MinuteNurse API i PostgreSQL baza su uspešno povezani!"}

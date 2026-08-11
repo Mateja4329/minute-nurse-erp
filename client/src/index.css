@@ -9,7 +9,7 @@ body {
   background: linear-gradient(-45deg, #ffffff, #f0f4f3, #e0ebe8, #f8f9fa);
   background-size: 100% 100%;
 
-  animation: breathingBackground 15s ease-in-out infinite;
+  animation: breathingBackground 10s ease-in-out infinite;
   will-change: opacity;
 
   min-height: 100vh;

@@ -12,7 +12,7 @@ const LoginForm = () => {
     // container when the user first opens the page.
     
   const [role, setRole] = useState('patient')
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
   const navigate = useNavigate()
@@ -20,8 +20,8 @@ const LoginForm = () => {
   function handleSubmit(e) {
     e.preventDefault()
     // Here you would typically handle the login logic, such as sending the 
-    // username, password, and role to your server for authentication.
-    console.log('Logging in with: ', { role, username, password })
+    // email, password, and role to your server for authentication.
+    console.log('Logging in with: ', { role, email, password })
 
     if (role === 'administrator') {
         navigate('/Administrator')
@@ -65,14 +65,14 @@ const LoginForm = () => {
                   </Form.Select>
                 </Form.Group>
 
-                {/* Username input */}
+                {/* Email input */}
                 <Form.Group className="mb-4">
-                  <Form.Label className="text-muted fw-bold">Korisničko ime</Form.Label>
+                  <Form.Label className="text-muted fw-bold">Email adresa</Form.Label>
                   <Form.Control 
-                    type="text" 
-                    placeholder="Unesite korisničko ime"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    type="email" 
+                    placeholder="Unesite email adresu"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     size="lg"
                     required
                   />
