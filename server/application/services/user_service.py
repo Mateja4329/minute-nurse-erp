@@ -1,7 +1,9 @@
 import bcrypt
+import jwt
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from application.DTOs.user.login_response_dto import LoginResponseDTO
 from application.DTOs.user.user_login_dto import UserLoginDTO
 from application.DTOs.user.user_create_dto import UserCreateDTO
 from application.DTOs.user.user_response_dto import UserResponseDTO
@@ -19,7 +21,8 @@ class UserService(IUserService):
     def __init__(self, repo: IUserRepository):
         self.__repo = repo
 
-    '''--------------- REGISTER ---------------'''
+    # ================= POST =================
+    # --------------- REGISTER ---------------
     async def register_new_user_app(self, dto: UserCreateDTO, db: AsyncSession) -> UserResponseDTO:
         # first we create a salt to avoid identical codes having the same hash, then we hash it and mix it with the salt
         # then we can store it in the db and decoding it makes it easier for the db to store (i think)
@@ -33,11 +36,11 @@ class UserService(IUserService):
 
         return to_user_response_dto(saved_user)
 
-    '''--------------- LOGIN ---------------'''
+    # --------------- REGISTER ---------------
     async def login_user_app(
             self, dto: UserLoginDTO,
             db: AsyncSession
-    ) -> tuple[UserResponseDTO, str] | None:
+    ) -> tuple[LoginResponseDTO, str] | None:
 
         user = await self.__repo.get_user_by_email_async(db, dto.email)
         if user is None:
@@ -50,9 +53,44 @@ class UserService(IUserService):
 
         if not is_password_valid:
             return None
-        token = jwt_helper.create_access_token(user)
+        access_token = jwt_helper.create_access_token(user)
+        refresh_token = jwt_helper.create_refresh_token(user) #this must go to HTTP-Only cookie
 
-        return to_user_response_dto(user), token
+        login_dto = LoginResponseDTO(
+            token=access_token,
+            user=to_user_response_dto(user)
+        )
+
+        return login_dto, refresh_token
+
+
+    # --------------- REFRESH TOKEN ---------------
+    async def refresh_token_app(self, refresh_token: str, db: AsyncSession) -> tuple[str, str] | None:
+        try:
+            # We must decode the token before using it, using our secret key
+            payload = jwt.decode(refresh_token, jwt_helper.SECRET_KEY, algorithms=[jwt_helper.ALGORITHM])
+            user_id: str = payload.get('sub')
+
+            if not user_id:
+                return None
+
+        # If the token expired after 7 days or someone tried to hack it
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+            return None
+
+        user = await self.__repo.get_user_by_id_async(db, user_id)
+        if user is None:
+            return None
+
+        # Now we create new tokens for the user
+        new_access_token = jwt_helper.create_access_token(user)
+        new_refresh_token = jwt_helper.create_refresh_token(user)
+
+        return new_access_token, new_refresh_token
+
+
+
+
 
 
 

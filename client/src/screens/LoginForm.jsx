@@ -1,6 +1,7 @@
 import React, {useState} from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap'
+import { useAuth } from '../context/AuthContext'
 
 const LoginForm = () => {
     // role: The variable from which we read the current value (eg the currently selected role).
@@ -11,24 +12,48 @@ const LoginForm = () => {
     // useState('Patient'): This is where we tell React what we want to be in the 
     // container when the user first opens the page.
     
-  const [role, setRole] = useState('patient')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
   const navigate = useNavigate()
+  const { login, api } = useAuth() // Get the login function from AuthContext hook
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     // Here you would typically handle the login logic, such as sending the 
     // email, password, and role to your server for authentication.
-    console.log('Logging in with: ', { role, email, password })
 
-    if (role === 'administrator') {
+    const userData = {
+      email: email,
+      password: password
+    }
+
+    console.log('Logging in with: ', { email, password })
+
+    try{
+      const response = await api.post('/api/user/Login', userData)
+
+      // We don't need to check for response.ok because Axios is smart enough to throw an error
+
+      const successData = response.data // returns our LoginResponseDTO object with token and username in json
+      await login(successData.user, successData.token)
+
+      console.log("Login successful: ", successData)
+      alert('Login uspešan! Dobrodosli ' + successData.user.first_name + ' ' + successData.user.last_name)
+
+      if (successData.user.role === 'Admin') {
         navigate('/Administrator')
-    } else if (role === 'medical-staff') {
+      } 
+      else if (successData.user.role === 'MedicalStaff') {
         navigate('/MedicalStaff')
-    } else if (role === 'patient') {
+      } 
+      else if (successData.user.role === 'Patient') {
         navigate('/Patient')
+      }
+
+    } catch (error) {
+      console.error("Network error: ", error)
+      alert("Došlo je do greške prilikom prijavljivanja. Molimo pokušajte ponovo.")
     }
   }
 
@@ -50,21 +75,6 @@ const LoginForm = () => {
             
             <Card.Body className="p-5">
               <Form onSubmit={handleSubmit}>
-                
-                {/* Role selection dropdown */}
-                <Form.Group className="mb-4">
-                  <Form.Label className="text-muted fw-bold">Izaberite ulogu</Form.Label>
-                  <Form.Select 
-                    value={role} 
-                    onChange={(e) => setRole(e.target.value)}
-                    size="lg" // Makes the input field larger and more clickable
-                  >
-                    <option value='administrator'>Administrator</option>
-                    <option value='medical-staff'>Medicinsko osoblje</option>
-                    <option value='patient'>Pacijent</option>
-                  </Form.Select>
-                </Form.Group>
-
                 {/* Email input */}
                 <Form.Group className="mb-4">
                   <Form.Label className="text-muted fw-bold">Email adresa</Form.Label>

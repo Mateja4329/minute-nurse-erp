@@ -2,6 +2,7 @@ import React from 'react'
 import {useState} from 'react'
 import {Container, Form, Button, Row, Col} from 'react-bootstrap'
 import {Link, useNavigate} from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 const RegisterScreen = () => {
     // first, we create states for all the form fields.
@@ -12,17 +13,25 @@ const RegisterScreen = () => {
     const [phone, setPhone] = useState('')
     const [address, setAddress] = useState('')
 
-    const [role, setRole] = useState('Patient') // default role is 'patient'
-
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
 
     // Initialize navigation function
     const navigate = useNavigate()
 
+    const { api } = useAuth()
+
     // Function which triggers when the user clicks the "Register" button
     const handleSubmit = async (e) => {
         e.preventDefault() // Prevent the default form submission behavior
+
+        // for safety, we will check the password again
+        // its faster on frontend than waiting for the backend to respond with an error
+        if (password !== confirmPassword){
+            console.log("Passwords do not match!")
+            alert("Lozinke se ne poklapaju!")
+            return
+        }
 
         // We accept the data from the form and add it to UserCreateDTO object
         const userData = {
@@ -31,44 +40,29 @@ const RegisterScreen = () => {
             email: email,
             phone_number: phone,
             address: address,
-            role: role,
             password: password,
             confirm_password: confirmPassword
         }
 
         try{
             // Now we send POST request to the FastAPI
-            const response = await fetch("http://localhost:8000/api/user/Register", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(userData)
-            })
-            // for safety, we will check the password again
-            // its faster on frontend than waiting for the backend to respond with an error
-            if (password !== confirmPassword){
-                console.log("Passwords do not match!")
-                alert("Lozinke se ne poklapaju!")
-                return
-            }
+            const response = await api.post('/api/user/Register', userData)
 
-            // We check if API returned an error (e.g. user already exists or passwords don't match)
-            if(!response.ok){
-                const errorData = await response.json()
-                console.error("Error during registration: ", errorData)
-                alert("Error: " + JSON.stringify(errorData.detail))
-                return
-            }
             // If registration is successful, we return the UserResponseDTO object
-            const successData = await response.json()
+            const successData = response.data
             console.log("Registration successful: ", successData)
-            alert('Registracija uspješna! Sada se možete prijaviti.')
+            alert('Registracija uspešna! Sada se možete prijaviti.')
             navigate('/login')
 
         } catch (error) {
             console.error("Network error: ", error)
-            alert("Došlo je do greške prilikom registracije. Molimo pokušajte ponovo.")
+            
+            if (error.response && error.response.data) {
+                // If backend returned a specific error (e.g. email already exists)
+                alert("Greška: " + JSON.stringify(error.response.data.detail))
+            } else {
+                alert("Došlo je do greške prilikom registracije. Molimo pokušajte ponovo.")
+            }
         }
     }
 
@@ -141,15 +135,6 @@ const RegisterScreen = () => {
                             onChange = {(e) => setAddress(e.target.value)}
                             required
                         />
-                    </Form.Group>
-
-                    {/* Field for selecting user role (patient or medical staff) */}
-                    <Form.Group className="mb-3" controlId="role">
-                        <Form.Label>Izaberite ulogu</Form.Label>
-                        <Form.Select value={role} onChange={(e) => setRole(e.target.value)}>
-                            <option value="Patient">Pacijent</option>
-                            <option value="MedicalStaff">Medicinsko osoblje</option>
-                        </Form.Select>
                     </Form.Group>
 
                     {/* Field for password */}

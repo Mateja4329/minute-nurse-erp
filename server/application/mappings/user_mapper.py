@@ -1,6 +1,6 @@
 from application.DTOs.user.user_create_dto import UserCreateDTO
 from application.DTOs.user.user_response_dto import UserResponseDTO
-from infrastructure.entities.user import User
+from infrastructure.entities.user import User, UserRole
 from typing import List
 
 def to_user_entity(dto: UserCreateDTO, hashed_password: str) -> User:
@@ -11,7 +11,7 @@ def to_user_entity(dto: UserCreateDTO, hashed_password: str) -> User:
         hashed_password=hashed_password,
         phone_number=dto.phone_number,
         address=dto.address,
-        role=dto.role
+        role=UserRole.PATIENT
     )
 
 def to_user_response_dto(user: User) -> UserResponseDTO:

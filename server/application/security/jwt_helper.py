@@ -15,8 +15,9 @@ from infrastructure.repository.user_repository import get_user_repository
 
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 ALGORITHM = "HS512"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 15
 
+# ------------- ACCESS TOKEN -------------
 def create_access_token(user: User) -> str:
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
@@ -37,9 +38,25 @@ def create_access_token(user: User) -> str:
 
     return encoded_jwt
 
+# ------------- REFRESH TOKEN -------------
+REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
 
+def create_refresh_token(user: User) -> str:
+    expire = datetime.now(timezone.utc) + timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+
+    payload = {
+        "sub": str(user.id),
+        "exp": expire,
+    }
+
+    encoded_jwt = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+    return encoded_jwt
+
+# ------------- AUTHENTIFICATION -------------
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user/Login")
 
+# Middleware/dependency (our guard)
 async def get_current_user(
         token: str = Depends(oauth2_scheme),
         db: AsyncSession = Depends(get_db),
@@ -54,7 +71,7 @@ async def get_current_user(
             raise HTTPException(status_code=401, detail="Invalid token structure")
 
     # If the token expired or someone changed it, throws an error
-    except jwt.ExpiredSignatureError:
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
         raise HTTPException(
             status_code=401,
             detail="Token is invalid or expired",

@@ -10,8 +10,6 @@ class UserCreateDTO(BaseModel):
     phone_number: str = Field(..., max_length=20)
     address: str = Field(..., max_length=100)
 
-    role: UserRole = UserRole.PATIENT
-
     password: str = Field(..., min_length = 6)
     confirm_password: str = Field(..., min_length=6)
 
@@ -19,12 +17,6 @@ class UserCreateDTO(BaseModel):
     def check_password_match(self):
         if self.password != self.confirm_password:
             raise ValueError("Passwords do not match")
-        return self
-
-    @model_validator(mode='after')
-    def check_role(self):
-        if self.role == UserRole.ADMIN:
-            raise ValueError("Admin role not allowed")
         return self
 
     ''' ---------- Explanation ----------

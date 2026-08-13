@@ -5,20 +5,29 @@ from infrastructure.repository.interface.i_user_repository import IUserRepositor
 
 
 class UserRepository(IUserRepository):
-    '''--------------- REGISTER ---------------'''
+    # ================= POST =================
+    # --------------- REGISTER ---------------
     async def create_user_async(self, db: AsyncSession, new_user: User):
         db.add(new_user)
         await db.commit()
         await db.refresh(new_user)
         return new_user
 
-    '''--------------- LOGIN ---------------'''
+    # --------------- LOGIN ---------------
+    # --------------- EMAIL ---------------
     async def get_user_by_email_async(self, db: AsyncSession, email: str):
         # Creating an SQL request like SELECT * FROM users WHERE email = '...'
         stmt = select(User).where(User.email == email)
         result = await db.execute(stmt)
         return result.scalars().one_or_none()
         # scalar_one_or_none() return an object if it finds it, or None if it doesn't
+
+    # --------------- ID ---------------
+    async def get_user_by_id_async(self, db: AsyncSession, user_id: str):
+        stmt = select(User).where(User.id == user_id)
+        result = await db.execute(stmt)
+        return result.scalars().one_or_none()
+
 
 # This makes an instance for repo and returns it to service
 async def get_user_repository() -> IUserRepository:
