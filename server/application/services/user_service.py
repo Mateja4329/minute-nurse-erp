@@ -36,7 +36,7 @@ class UserService(IUserService):
 
         return to_user_response_dto(saved_user)
 
-    # --------------- REGISTER ---------------
+    # --------------- LOGIN ---------------
     async def login_user_app(
             self, dto: UserLoginDTO,
             db: AsyncSession
@@ -88,9 +88,13 @@ class UserService(IUserService):
 
         return new_access_token, new_refresh_token
 
-
-
-
+    # ================= GET =================
+    # --------------- ONE ---------------
+    async def get_user_profile_app(self, user_id: str, db: AsyncSession) -> UserResponseDTO | None:
+        user = await self.__repo.get_user_by_id_async(db, user_id)
+        if user is None:
+            return None
+        return to_user_response_dto(user)
 
 
 

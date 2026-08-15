@@ -1,10 +1,30 @@
 import React from 'react'
 // Container centers content, Row creates a row, and Col creates a column within a row.
-import {Navbar, Container, Nav, Button} from 'react-bootstrap'
+import {Navbar, Container, Nav, Button, NavDropdown} from 'react-bootstrap'
 // Import the 'Link' component. It is crucial for Single Page Applications!
-import {Link} from 'react-router-dom'
+import {useNavigate, Link} from 'react-router-dom'
+
+import { useAuth } from '../context/AuthContext'
 
 const Header = () => {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate()
+
+    async function handleLogout(e) {
+        e.preventDefault()
+
+        try {
+            await logout()
+            console.log("Logout successful")
+            alert('Odjavili ste se.')
+
+            navigate('/login')
+        } catch (e) {
+            console.error("Network error: ", e)
+            alert("Došlo je do greške prilikom odjavljivanja. Molimo pokušajte ponovo.")
+        }
+    }
+
   return (
     <header>
         <Navbar bg='white' variant='light' expand='lg' collapseOnSelect className="shadow-sm py-3 border-bottom">
@@ -29,23 +49,38 @@ const Header = () => {
                             Početna
                         </Nav.Link>
                         
-                        <Nav.Link as={Link} to='/login' className="fw-semibold px-3" style={{ color: '#2c3e50' }}>
-                            Prijava
-                        </Nav.Link>
-                        
-                        {/* 
-                          UX Trik: Registracija je najvažnija akcija za novog pacijenta, 
-                          zato je pretvaramo u stilizovano dugme zaobljenih ivica (rounded-pill).
-                        */}
-                        <Nav.Link as={Link} to='/register' className="pe-0">
-                            <Button 
-                              variant="primary" 
-                              className="fw-bold px-4 rounded-pill shadow-sm" 
-                              style={{ backgroundColor: '#1a7a68', border: 'none' }}
-                            >
-                                Registracija
-                            </Button>
-                        </Nav.Link>
+                        { user ? (
+                            <NavDropdown title={<span style={{ color: '#1a7a68' }}>Moj nalog</span>} 
+                            id="basic-nav-dropdown" className="fw-bold px-2">
+                                {/* Link for user profile */}
+                                <NavDropdown.Item as={Link} to='/profile' className="fw-semibold text-dark">
+                                    👤 Moj Profil
+                                </NavDropdown.Item>
+
+                                <NavDropdown.Divider/>
+
+                                {/* Button for logout */}
+                                <NavDropdown.Item onClick={handleLogout} className="text-danger fw-bold">
+                                    🚪 Odjavi se
+                                </NavDropdown.Item>
+                            </NavDropdown>
+                        ) : (
+                            <>
+                                <Nav.Link as={Link} to='/login' className="fw-semibold px-3" style={{ color: '#2c3e50' }}>
+                                    Prijava
+                                </Nav.Link>
+
+                                <Nav.Link as={Link} to='/register' className="pe-0">
+                                    <Button
+                                      variant="primary"
+                                      className="fw-bold px-4 rounded-pill shadow-sm"
+                                      style={{ backgroundColor: '#1a7a68', border: 'none' }}
+                                    >
+                                        Registracija
+                                    </Button>
+                                </Nav.Link>
+                            </>
+                        )}
                     </Nav>
                 </Navbar.Collapse>
             </Container>

@@ -2,12 +2,14 @@ import React from 'react'
 import {Container, Button, Card, Row, Col, ListGroup, Form} from 'react-bootstrap'
 import {Link} from 'react-router-dom'
 import { useState } from 'react'
+import { useAuth } from '../context/AuthContext'
 
 const HomeScreen = () => {
 
   // State variables for handling the guest inquiry form
   const [query, setQuery] = useState('')
   const [guestEmail, setGuestEmail] = useState('')
+  const { user } = useAuth()
 
   // Sample announcements data - in a real application, this would likely come from an API
   const announcements = [
@@ -24,27 +26,69 @@ const HomeScreen = () => {
     setGuestEmail('');
   }
 
+  let panelLink = ""
+  let panelText = ""
+  let bgImage = "none"
+
+  // if the user is logged in
+  if (user) {
+    if (user.role === 'Admin') {
+          panelLink = "/Administrator";
+          panelText = "Otvori admin panel";
+          bgImage = "url(/admin_background_image.jpg)";
+      } else if (user.role === 'MedicalStaff') {
+          panelLink = "/MedicalStaff";
+          panelText = "Otvori medicinski panel";
+          bgImage = "url(/medical_staff_background.jpg)";
+      } else if (user.role === 'Patient') {
+          panelLink = "/Patient";
+          panelText = "Otvori karton pacijenta";
+          bgImage = "url(/patient_background_image.jpg)";
+      }
+  }
+
   return (
     // 'bg-light' adds a soft gray background, 'p-5' adds padding on all sides,
     //  'rounded-3' wraps the edges
     <Container className="mt-5">
-      <div className="p-5 mb-4 bg-light rounded-3 border shadow-sm text-center">
+      <div className="p-5 mb-4 bg-light rounded-3 border shadow-sm text-center"
+      style={{ 
+          backgroundImage: bgImage,
+           backgroundSize: 'cover',
+            backgroundPosition: 'center',
+             borderRadius: '15px'
+      }}>
         <Container fluid className="py-5 fade-in-up delay-1">
-          <h1 className="display-5 fw-bold">Dobrodošli u MinuteNurse ERP</h1>
-          <p className="col-md-12 fs-4 text-muted">
-            Savremeni informacioni sistem za efikasno upravljanje medicinskim osobljem, 
-            evidenciju pacijenata i brzu koordinaciju zdravstvenih usluga u realnom vremenu.
-          </p>
-          <div className="d-flex justify-content-center gap-3 mt-4">
-            {/* Dugme koje vodi direktno na formu za prijavu */}
-            <Button as={Link} to="/login" variant="primary" size="lg">
-              Prijavite se na sistem
-            </Button>
-            {/* Dugme koje vodi na formu za kreiranje novog naloga */}
-            <Button as={Link} to="/register" variant="outline-secondary" size="lg">
-              Kreirajte nalog
-            </Button>
-          </div>
+          { user ? (
+            <>
+              <div style={{backgroundColor: 'rgba(0, 0, 0, 0.3)', padding: '10px', borderRadius: '100px'}}>
+                <h1 className="display-5 fw-bold" style={{color: 'white'}}>Dobrodošli, {user.first_name}!</h1>
+              </div>
+              <div className="d-flex justify-content-center gap-3 mt-4">
+                <Button as={Link} to={panelLink} variant="primary" size="lg">
+                  {panelText}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h1 className="display-5 fw-bold">Dobrodošli u MinuteNurse ERP</h1>
+              <p className="col-md-12 fs-4 text-muted">
+                Savremeni informacioni sistem za efikasno upravljanje medicinskim osobljem, 
+                evidenciju pacijenata i brzu koordinaciju zdravstvenih usluga u realnom vremenu.
+              </p>
+              <div className="d-flex justify-content-center gap-3 mt-4">
+                {/* Dugme koje vodi direktno na formu za prijavu */}
+                <Button as={Link} to="/login" variant="primary" size="lg">
+                  Prijavite se na sistem
+                </Button>
+                {/* Dugme koje vodi na formu za kreiranje novog naloga */}
+                <Button as={Link} to="/register" variant="outline-secondary" size="lg">
+                  Kreirajte nalog
+                </Button>
+              </div>
+            </>
+          )}
         </Container>
       </div>
 
@@ -63,7 +107,7 @@ const HomeScreen = () => {
         </Col>
         <Col md={4} className="mb-3 fade-in-up delay-2">
           <Card className="h-100 hover-card-animate shadow-sm">
-            <Card.Body style={{backgroundImage: 'url(/medical-staff-image.jpg)', backgroundSize: '100%', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: '#f8f9fa'}}>
+            <Card.Body style={{backgroundImage: 'url(/medical_staff_image.jpg)', backgroundSize: '100%', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: '#f8f9fa'}}>
               <Card.Title className="fw-bold" style={{backgroundColor: 'rgba(255, 255, 255, 0.5)', padding: '10px', borderRadius: '5px'}}>Za Medicinsko Osoblje</Card.Title>
               <Card.Text className="text-muted" style={{backgroundColor: 'rgba(255, 255, 255, 0.6)', padding: '15px', borderRadius: '5px'}}>
                 Efikasno vođenje smena, upravljanje zdravstvenim kartonima i trenutni pristup hitnim zadacima.
@@ -73,7 +117,7 @@ const HomeScreen = () => {
         </Col>
         <Col md={4} className="mb-3 fade-in-up delay-3">
           <Card className="h-100 hover-card-animate shadow-sm">
-            <Card.Body style={{backgroundImage: 'url(/admi_image.jpg)', backgroundSize: '100%', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: '#f8f9fa'}}>
+            <Card.Body style={{backgroundImage: 'url(/admin_image.jpg)', backgroundSize: '100%', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundColor: '#f8f9fa'}}>
               <Card.Title className="fw-bold" style={{backgroundColor: 'rgba(255, 255, 255, 0.5)', padding: '10px', borderRadius: '5px'}}>Za Administratore</Card.Title>
               <Card.Text className="text-muted" style={{backgroundColor: 'rgba(255, 255, 255, 0.6)', padding: '15px', borderRadius: '5px'}}>
                 Potpuna kontrola nad korisničkim nalozima, CRUD operacije nad bazom podataka i praćenje rada sistema.

@@ -3,37 +3,49 @@ import axios from 'axios'
 
 export const AuthContext = createContext()
 
-export const AuthProvider = ({ children}) => {
+// ============================================================================
+// 🚨 ARCHITECTURE WARNING (INFINITE LOOP AVOIDANCE):
+// The Axios instance MUST be declared OUTSIDE the component (here in the global scope).
+// If placed inside an AuthProvider, React will render on every render (eg when 
+// call setUser or setToken) recreate a brand new object in memory.
+// If that new object is found in the useEffect dependencies, React will think it has
+// "changed something" and trigger calls to the base again, making an infinite loop!
+// So we only instantiate it once here:
+// ============================================================================
+export const api = axios.create({
+    baseURL: "http://localhost:8000",
+    withCredentials: true // This is crucial for sending cookies.
+})
+
+export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null)
     const [token, setToken] = useState(null)
     const [loading, setLoading] = useState(true)
-
-    // very important for sending cookies with every request.
-    const api = axios.create({
-        baseURL: "http://localhost:8000",
-        withCredentials: true // This is crucial for sending cookies.
-    })
 
     // while the app is loading, try refreshing the token
     useEffect(() => {
         const checkAuth = async () => {
             try {
                 const response = await api.post('/api/user/Refresh')
-
                 const newAccessToken = response.data.access_token
-                setToken(newAccessToken)
 
+                setToken(newAccessToken)
                 api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`
+
+                // after we get his token THEN we get the user data
+                const profileResponse = await api.get('/api/user/Profile')
+                setUser(profileResponse.data) // now we add the user into the memory
             }
             catch (error) { // if there are no cookies or expired cookies
                 console.log("Not logged in");
+                setUser(null);
             }
             finally {
                 setLoading(false)
             }
         }
         checkAuth()
-    }, [api])
+    }, [])
 
     // function for LoginForm.jsx
     const login = async (userData, accessToken) => {
@@ -46,9 +58,7 @@ export const AuthProvider = ({ children}) => {
     // function for future LogoutForm.jsx (when I add it)
     const logout = async () => {
         try {
-            // now we need to call the backend to clean the cookies
-            // (will have to add api/user/Logout on the backend soon)
-            // await api.post('/api/user/Logout')
+            await api.post('/api/user/Logout')
         }
         catch(e) {
             console.error(e)
