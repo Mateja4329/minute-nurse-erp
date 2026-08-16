@@ -9,7 +9,7 @@ const HomeScreen = () => {
   // State variables for handling the guest inquiry form
   const [query, setQuery] = useState('')
   const [guestEmail, setGuestEmail] = useState('')
-  const { user } = useAuth()
+  const { user, api } = useAuth()
 
   // Sample announcements data - in a real application, this would likely come from an API
   const announcements = [
@@ -18,12 +18,38 @@ const HomeScreen = () => {
     { id: 3, date: '20. Maj 2026.', text: 'Uveli smo novog specijalistu kardiologije u naš tim!' }
   ]
 
-  const sendAnInquiry = (e) => {
+  const sendAnInquiry = async (e) => {
     e.preventDefault()
 
-    alert(`Vaš upit je uspešno poslat! Odgovorićemo Vam na email: ${guestEmail}`);
-    setQuery('');
-    setGuestEmail('');
+    try{
+      const response = await api.post('api/email/inquiry', {
+        email: guestEmail,
+        message: query
+      })
+
+      const successMessage = response.data.message || "Upit je uspešno poslat!"
+      alert(successMessage)
+
+      setQuery('')
+      setGuestEmail('')
+    }
+    catch (error){
+      if(error.response && error.response.data && error.response.data.detail){
+        const detail = error.response.data.detail
+
+        if(typeof detail === 'string'){
+          alert(`Greška: ${detail}`)
+        }
+        else if(Array.isArray(detail)){
+          alert(`Neispravan unos: ${detail[0].msg}`)
+        }
+      }
+      else {
+        alert("Došlo je do greške sa mrežom. Molimo pokušajte ponovo.");
+      }
+
+      console.error("Error details:", error);
+    }
   }
 
   let panelLink = ""

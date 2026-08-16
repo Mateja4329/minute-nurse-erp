@@ -1,4 +1,3 @@
-from infrastructure.entities.user import UserRole
 from pydantic import BaseModel, EmailStr, Field, model_validator
 
 

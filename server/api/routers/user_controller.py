@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response, HTTPException, Cookie
+from fastapi import APIRouter, Depends, Response, HTTPException, Cookie, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from application.DTOs.user.user_create_dto import UserCreateDTO
@@ -15,6 +15,8 @@ from infrastructure.database import get_db
 from infrastructure.entities.user import User
 from infrastructure.repository.interface.i_user_repository import IUserRepository
 
+from application.security.rate_limiter import limiter
+
 router = APIRouter(prefix="/api/user")
 
 # ------------------ brief explanation ------------------
@@ -26,7 +28,9 @@ router = APIRouter(prefix="/api/user")
 # ================= POST =================
 # --------------- REGISTER ---------------
 @router.post("/Register")
+@limiter.limit("1/minute")
 async def register_new_user(
+        request: Request,
         dto: UserCreateDTO,
         db: AsyncSession = Depends(get_db),
         service: IUserService = Depends(get_user_service) # <- Dep. Inj.!!
@@ -38,7 +42,9 @@ async def register_new_user(
 
 # --------------- LOGIN ---------------
 @router.post("/Login")
+@limiter.limit("3/minute")
 async def login_user(
+        request: Request,
         response: Response,
         dto: UserLoginDTO,
         db: AsyncSession = Depends(get_db),
@@ -112,7 +118,9 @@ async def refresh_token(
 
 # ================= GET =================
 @router.get("/Profile")
+@limiter.limit("5/minute")
 async def get_user_profile(
+        request: Request,
         current_user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_db),
         service: IUserService = Depends(get_user_service)
@@ -126,13 +134,15 @@ async def get_user_profile(
 
 # ================= PUT =================
 @router.put("/UpdateProfile")
+@limiter.limit("2/hour")
 async def update_user_profile(
-        request: UserUpdateDTO,
+        request: Request,
+        dto: UserUpdateDTO,
         current_user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_db),
         service: IUserService = Depends(get_user_service),
 ) -> UserResponseDTO | None:
-    update = await service.update_user_profile_app(current_user.id, request, db)
+    update = await service.update_user_profile_app(current_user.id, dto, db)
     if update is None:
         raise HTTPException(status_code=404, detail="User not found")
 

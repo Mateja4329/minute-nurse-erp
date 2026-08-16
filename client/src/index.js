@@ -9,12 +9,12 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Adding the pages
 import HomeScreen from './screens/HomeScreen';
-import LoginForm from './screens/LoginForm';
+import LoginForm from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
-import AdminPanel from './screens/AdminPanel';
-import MedicalStaffPanel from './screens/MedicalStaffPanel';
-import PatientPanel from './screens/PatientPanel';
-import ProfileScreen from './screens/profile/ProfileScreen';
+import ProfileScreen from './screens/ProfileScreen';
+import AdminPanel from './components/panels/AdminPanel';
+import MedicalStaffPanel from './components/panels/MedicalStaffPanel';
+import PatientPanel from './components/panels/PatientPanel';
 
 // Import routing utilities from react-router-dom for handling navigation
 import {

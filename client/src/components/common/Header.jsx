@@ -4,7 +4,7 @@ import {Navbar, Container, Nav, Button, NavDropdown} from 'react-bootstrap'
 // Import the 'Link' component. It is crucial for Single Page Applications!
 import {useNavigate, Link} from 'react-router-dom'
 
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../../context/AuthContext'
 
 const Header = () => {
     const { user, logout } = useAuth();

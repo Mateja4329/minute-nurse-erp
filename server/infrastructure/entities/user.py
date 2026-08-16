@@ -1,9 +1,14 @@
 import uuid
 import enum
+from typing import TYPE_CHECKING
 from sqlalchemy import Column, String, Enum
 from sqlalchemy.dialects.postgresql import UUID
 from infrastructure.database import Base
 from sqlalchemy.orm import relationship
+
+if TYPE_CHECKING:
+    from infrastructure.entities.profiles.patient_profile import PatientProfile
+    from infrastructure.entities.profiles.staff_profile import StaffProfile
 
 class UserRole(str, enum.Enum):
     ADMIN = 'Admin'
