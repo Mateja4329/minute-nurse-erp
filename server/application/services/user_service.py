@@ -7,6 +7,7 @@ from application.DTOs.user.login_response_dto import LoginResponseDTO
 from application.DTOs.user.user_login_dto import UserLoginDTO
 from application.DTOs.user.user_create_dto import UserCreateDTO
 from application.DTOs.user.user_response_dto import UserResponseDTO
+from application.DTOs.user.user_update_dto import UserUpdateDTO
 from application.mappings.user_mapper import to_user_entity, to_user_response_dto
 from application.security import jwt_helper
 from application.services.interface.i_user_service import IUserService
@@ -95,6 +96,28 @@ class UserService(IUserService):
         if user is None:
             return None
         return to_user_response_dto(user)
+
+    # ================= PUT =================
+    # --------------- UPDATE PROFILE ---------------
+    async def update_user_profile_app(
+            self,
+            user_id: str,
+            request: UserUpdateDTO,
+            db: AsyncSession) -> UserResponseDTO | None:
+
+        updated_user = await self.__repo.update_user_profile_async(
+            user_id,
+            request.first_name,
+            request.last_name,
+            request.phone_number,
+            request.address
+        )
+
+        if updated_user is None:
+            return None
+        return to_user_response_dto(updated_user)
+
+
 
 
 

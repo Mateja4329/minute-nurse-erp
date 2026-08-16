@@ -14,6 +14,7 @@ import RegisterScreen from './screens/RegisterScreen';
 import AdminPanel from './screens/AdminPanel';
 import MedicalStaffPanel from './screens/MedicalStaffPanel';
 import PatientPanel from './screens/PatientPanel';
+import ProfileScreen from './screens/profile/ProfileScreen';
 
 // Import routing utilities from react-router-dom for handling navigation
 import {
@@ -39,6 +40,8 @@ const router = createBrowserRouter(
       <Route path="Administrator" element={<AdminPanel />} />
       <Route path="MedicalStaff" element={<MedicalStaffPanel />} />
       <Route path="Patient" element={<PatientPanel />} />
+
+      <Route path="Profile" element={<ProfileScreen />} />
     </Route>
   )
 )

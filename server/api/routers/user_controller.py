@@ -5,6 +5,7 @@ from application.DTOs.user.user_create_dto import UserCreateDTO
 from application.DTOs.user.user_login_dto import UserLoginDTO
 from application.DTOs.user.login_response_dto import LoginResponseDTO
 from application.DTOs.user.user_response_dto import UserResponseDTO
+from application.DTOs.user.user_update_dto import UserUpdateDTO
 from application.security.jwt_helper import get_current_user
 
 from application.services.interface.i_user_service import IUserService
@@ -122,3 +123,17 @@ async def get_user_profile(
         raise HTTPException(status_code=404, detail="User not found")
 
     return profile
+
+# ================= PUT =================
+@router.put("/UpdateProfile")
+async def update_user_profile(
+        request: UserUpdateDTO,
+        current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db),
+        service: IUserService = Depends(get_user_service),
+) -> UserResponseDTO | None:
+    update = await service.update_user_profile_app(current_user.id, request, db)
+    if update is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return update

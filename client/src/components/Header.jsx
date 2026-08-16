@@ -53,7 +53,7 @@ const Header = () => {
                             <NavDropdown title={<span style={{ color: '#1a7a68' }}>Moj nalog</span>} 
                             id="basic-nav-dropdown" className="fw-bold px-2">
                                 {/* Link for user profile */}
-                                <NavDropdown.Item as={Link} to='/profile' className="fw-semibold text-dark">
+                                <NavDropdown.Item as={Link} to='/Profile' className="fw-semibold text-dark">
                                     👤 Moj Profil
                                 </NavDropdown.Item>
 
