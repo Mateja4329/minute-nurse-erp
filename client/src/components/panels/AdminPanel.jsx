@@ -1,574 +1,500 @@
-import React, { useState } from 'react'
-import { Container, Row, Col, Table, Button, Badge, Modal, Form, Tabs, Tab, Card } from 'react-bootstrap'
+import React, { useState, useEffect, useCallback } from 'react'
+import { Container, Row, Col, Table, Button, Badge, Modal, Form, Tabs, Tab, Card, Spinner } from 'react-bootstrap'
+import { useAuth } from '../../context/AuthContext'
 
 const AdminPanel = () => {
-  // ==========================================
-  // 1. PATIENTS STATE & MOCK DATA
-  // ==========================================
-  const [patients, setPatients] = useState([
-    { 
-      id: 1, 
-      firstName: 'Marko', 
-      lastName: 'Marković', 
-      familyName: 'Porodica Marković', 
-      address: 'Bulevar Evrope 50, Novi Sad', 
-      phone: '+381601234567',
-      email: 'marko@gmail.com',
-      medicalNotes: 'Alergija na penicilin. Redovna terapija za pritisak.',
-      status: 'Aktivan' 
-    },
-    { 
-      id: 2, 
-      firstName: 'Milica', 
-      lastName: 'Nikolić', 
-      familyName: 'Porodica Nikolić', 
-      address: 'Maksima Gorkog 17, Beograd', 
-      phone: '+381649998887', 
-      email: 'milica@gmail.com', 
-      medicalNotes: 'Dijabetes tip 2.',
-      status: 'Deaktiviran' 
-    }
-  ])
+    const { api } = useAuth()
+    const [isLoading, setIsLoading] = useState(true)
 
-  // ==========================================
-  // 2. MEDICAL STAFF STATE & MOCK DATA
-  // ==========================================
-  const [staff, setStaff] = useState([
-    {
-      id: 1,
-      firstName: 'Sanja',
-      lastName: 'Ilić',
-      email: 'sanja.ilic@minutenurse.rs',
-      phone: '+381651112223',
-      role: 'Medicinska sestra',
-      shift: 'Jutarnja',
-      salary: '90000 rsd', // DODATO: Plata
-      status: 'Aktivan'
-    },
-    {
-      id: 2,
-      firstName: 'Dragan',
-      lastName: 'Simić',
-      email: 'dragan.simic@minutenurse.rs',
-      phone: '+381634445556',
-      role: 'Lekar/Doktor',
-      shift: 'Popodnevna',
-      salary: '150000 rsd', // DODATO: Plata
-      status: 'Aktivan'
-    }
-  ])
-
-  // ==========================================
-  // 3. SCHEDULES STATE & MOCK DATA
-  // ==========================================
-  const [schedules, setSchedules] = useState([
-    {
-      id: 1,
-      patientName: 'Marko Marković',
-      staffName: 'Sanja Ilić',
-      date: '2026-06-01',
-      time: '09:00',
-      service: 'Davanje terapije (Infuzija)',
-      location: 'Kućna poseta',
-      price: '6000 rsd', // DODATO: Cena
-      status: 'Zakazano'
-    }
-  ])
-
-  // ==========================================
-  // 4. VISIT REPORTS STATE & MOCK DATA
-  // ==========================================
-  const [reports] = useState([
-    {
-      id: 1,
-      patientName: 'Marko Marković',
-      staffName: 'Sanja Ilić',
-      date: '2026-05-25',
-      summary: 'Redovna kućna poseta. Pacijent stabilan, pritisak 120/80. Izmeren šećer u krvi.',
-      comment: 'Porodica prisutna tokom posete, pacijent se striktno pridržava prepisane terapije.'
-    }
-  ])
-
-  // ==========================================
-  // 5. MODALS & FORMS CONTROL STATES
-  // ==========================================
-  const [showPatientModal, setShowPatientModal] = useState(false)
-  const [isEditingPatient, setIsEditingPatient] = useState(false)
-  const [patientFormData, setPatientFormData] = useState({
-    id: null, firstName: '', lastName: '', familyName: '', address: '', phone: '', email: '', medicalNotes: '', status: 'Aktivan'
-  })
-
-  const [showStaffModal, setShowStaffModal] = useState(false)
-  const [isEditingStaff, setIsEditingStaff] = useState(false)
-  const [staffFormData, setStaffFormData] = useState({
-    // DODATO: salary polje
-    id: null, firstName: '', lastName: '', email: '', phone: '', role: 'Medicinska sestra', shift: 'Jutarnja', salary: '', status: 'Aktivan'
-  })
-
-  const [showScheduleModal, setShowScheduleModal] = useState(false)
-  const [scheduleFormData, setScheduleFormData] = useState({
-    // DODATO: price polje
-    patientIndex: '0', 
-    staffIndex: '0',   
-    date: '',
-    time: '',
-    service: 'Davanje terapije (Infuzija)', 
-    location: 'Ambulanta BW',
-    price: '' 
-  })
-
-  // ==========================================
-  // 6. CRUD & STATUS HANDLERS
-  // ==========================================
-  // Patient Handlers
-  const handlePatientClose = () => setShowPatientModal(false)
-  const handlePatientShowAdd = () => {
-    setIsEditingPatient(false)
-    setPatientFormData({ id: null, firstName: '', lastName: '', familyName: '', address: '', phone: '', email: '', medicalNotes: '', status: 'Aktivan' })
-    setShowPatientModal(true)
-  }
-  const handlePatientShowEdit = (patient) => {
-    setIsEditingPatient(true)
-    setPatientFormData(patient)
-    setShowPatientModal(true)
-  }
-  const handlePatientChange = (e) => {
-    const { name, value } = e.target
-    setPatientFormData({ ...patientFormData, [name]: value })
-  }
-  const handleSavePatient = (e) => {
-    e.preventDefault()
-    if (isEditingPatient) {
-      setPatients(patients.map(p => p.id === patientFormData.id ? patientFormData : p))
-    } else {
-      const newId = patients.length > 0 ? Math.max(...patients.map(p => p.id)) + 1 : 1
-      setPatients([...patients, { ...patientFormData, id: newId }])
-    }
-    handlePatientClose()
-  }
-  const togglePatientStatus = (id, currentStatus) => {
-    const newStatus = currentStatus === 'Aktivan' ? 'Deaktiviran' : 'Aktivan'
-    if (window.confirm(`Da li ste sigurni da želite da promenite status kartona u: ${newStatus}?`)) {
-      setPatients(patients.map(p => p.id === id ? { ...p, status: newStatus } : p))
-    }
-  }
-
-  // Staff Handlers
-  const handleStaffClose = () => setShowStaffModal(false)
-  const handleStaffShowAdd = () => {
-    setIsEditingStaff(false)
-    setStaffFormData({ id: null, firstName: '', lastName: '', email: '', phone: '', role: 'Medicinska sestra', shift: 'Jutarnja', salary: '', status: 'Aktivan' })
-    setShowStaffModal(true)
-  }
-  const handleStaffShowEdit = (member) => {
-    setIsEditingStaff(true)
-    setStaffFormData(member)
-    setShowStaffModal(true)
-  }
-  const handleStaffChange = (e) => {
-    const { name, value } = e.target
-    setStaffFormData({ ...staffFormData, [name]: value })
-  }
-  const handleSaveStaff = (e) => {
-    e.preventDefault()
-    if (isEditingStaff) {
-      setStaff(staff.map(s => s.id === staffFormData.id ? staffFormData : s))
-    } else {
-      const newId = staff.length > 0 ? Math.max(...staff.map(s => s.id)) + 1 : 1
-      setStaff([...staff, { ...staffFormData, id: newId }])
-    }
-    handleStaffClose()
-  }
-  const toggleStaffStatus = (id, currentStatus) => {
-    const newStatus = currentStatus === 'Aktivan' ? 'Deaktiviran' : 'Aktivan'
-    if (window.confirm(`Da li ste sigurni da želite da promenite status profila zaposlenog u: ${newStatus}?`)) {
-      setStaff(staff.map(s => s.id === id ? { ...s, status: newStatus } : s))
-    }
-  }
-
-  // Schedule Handlers
-  const handleScheduleClose = () => setShowScheduleModal(false)
-  const handleScheduleShowAdd = () => {
-    setScheduleFormData({ patientIndex: '0', staffIndex: '0', date: '', time: '', service: 'Davanje terapije (Infuzija)', location: 'Ambulanta BW', price: '' })
-    setShowScheduleModal(true)
-  }
-  const handleScheduleChange = (e) => {
-    const { name, value } = e.target
-    setScheduleFormData({ ...scheduleFormData, [name]: value })
-  }
-  const handleSaveSchedule = (e) => {
-    e.preventDefault()
+    // ==========================================
+    // 1. STATES FROM DATABASE
+    // ==========================================
+    const [patients, setPatients] = useState([])
+    const [staff, setStaff] = useState([])
+    const [pendingRequests, setPendingRequests] = useState([])
+    const [appointments, setAppointments] = useState([])
     
-    const selectedPatient = patients[parseInt(scheduleFormData.patientIndex)]
-    const selectedStaff = staff[parseInt(scheduleFormData.staffIndex)]
+    // mock data for terrain reports
+    const [reports] = useState([
+        { id: 1, patientName: 'Marko Marković', staffName: 'Sanja Ilić', date: '2026-05-25', summary: 'Pacijent stabilan, pritisak 120/80.', comment: 'Striktno se pridržava terapije.' }
+    ])
 
-    const newSchedule = {
-      id: schedules.length + 1,
-      patientName: `${selectedPatient.firstName} ${selectedPatient.lastName}`,
-      staffName: `${selectedStaff.firstName} ${selectedStaff.lastName}`,
-      date: scheduleFormData.date,
-      time: scheduleFormData.time,
-      service: scheduleFormData.service,
-      location: scheduleFormData.location,
-      price: scheduleFormData.price || 'Na upit', // Fallback ako nije uneta cena
-      status: 'Zakazano'
+    // ==========================================
+    // 2. FETCH DATA FROM BACKEND
+    // ==========================================
+    const fetchAllData = useCallback(async () => {
+        setIsLoading(true)
+        try {
+            const [patientsRes, staffRes, pendingRes, apptRes] = await Promise.all([
+                api.get('/api/profile/patient_profiles'),
+                api.get('/api/profile/staff_profiles'),
+                api.get('/api/service_request/pending'),
+                api.get('/api/appointment/all').catch(() => ({ data: [] }))
+            ])
+            setPatients(patientsRes.data)
+            setStaff(staffRes.data)
+            setPendingRequests(pendingRes.data)
+            setAppointments(apptRes.data)
+        } catch (error) {
+            console.error("Greška pri učitavanju Admin podataka:", error)
+        } finally {
+            setIsLoading(false)
+        }
+    }, [api])
+
+    useEffect(() => {
+        fetchAllData()
+    }, [fetchAllData])
+
+    // ==========================================
+    // 3. MODAL AND FORM CONTROLS
+    // ==========================================
+    const [showPatientModal, setShowPatientModal] = useState(false)
+    const [patientFormData, setPatientFormData] = useState({ user_id: '', family_name: '', date_of_birth: '', contact_email: '', care_notes: '' })
+
+    const [showStaffModal, setShowStaffModal] = useState(false)
+    const [staffFormData, setStaffFormData] = useState({ user_id: '', job_title: 'Medicinska sestra', shift: 'Jutarnja', salary: '', license_number: '' })
+
+    const [showTriageModal, setShowTriageModal] = useState(false)
+    const [selectedRequest, setSelectedRequest] = useState(null)
+    const [selectedStaffId, setSelectedStaffId] = useState('')
+    const [scheduleStatus, setScheduleStatus] = useState('SCHEDULED')
+
+    // ==========================================
+    // 4. API ACTIONS
+    // ==========================================
+    const handleSavePatient = async (e) => {
+        e.preventDefault()
+        try {
+            await api.post('/api/profile/patient_profile', patientFormData)
+            alert("Pacijent uspešno registrovan!")
+            setShowPatientModal(false)
+            setPatientFormData({ user_id: '', family_name: '', date_of_birth: '', contact_email: '', care_notes: '' })
+            fetchAllData()
+        } catch (error) {
+            alert("Greška pri kreiranju pacijenta. Proverite da li User UUID postoji.")
+        }
     }
 
-    setSchedules([...schedules, newSchedule])
-    handleScheduleClose()
-    alert('Novi termin uspešno kreiran i dodeljen medicinskom radniku!')
-  }
-
-  const deleteSchedule = (id) => {
-    if (window.confirm('Da li ste sigurni da želite da otkažete ovaj termin iz rasporeda?')) {
-      setSchedules(schedules.filter(s => s.id !== id))
+    const handleSaveStaff = async (e) => {
+        e.preventDefault()
+        try {
+            await api.post('/api/profile/staff_profile', staffFormData)
+            alert("Medicinsko osoblje uspešno registrovano!")
+            setShowStaffModal(false)
+            setStaffFormData({ user_id: '', job_title: 'Medicinska sestra', shift: 'Jutarnja', salary: '', license_number: '' })
+            fetchAllData()
+        } catch (error) {
+            alert("Greška pri kreiranju osoblja.")
+        }
     }
-  }
 
-  return (
-    <Container className='mt-5'>
-      <Row className='align-items-center mb-4'>
-        <Col>
-          <h2>Administratorski Kontrolni Centar</h2>
-          <p className="text-muted">Glavni interfejs za upravljanje ERP sistemom MinuteNurse.</p>
-        </Col>
-      </Row>
+    const handleApproveRequest = async (e) => {
+        e.preventDefault()
+        if (!selectedStaffId) {
+            alert("Morate izabrati osoblje!"); 
+            return;
+        }
 
-      <Tabs defaultActiveKey="patients" id="admin-tabs" className="mb-4">
-        
-        {/* TAB 1: PATIENTS & FAMILIES */}
-        <Tab eventKey="patients" title="Pacijenti i Porodice">
-          <Card className="border-0 shadow-sm">
-            <Card.Header className="bg-white d-flex justify-content-between align-items-center pt-4 pb-3">
-              <h5 className="mb-0 fw-bold" style={{ color: '#125447' }}>Baza pacijenata</h5>
-              <Button variant="primary" onClick={handlePatientShowAdd} style={{ backgroundColor: '#1a7a68', border: 'none' }}>
-                + Registruj pacijenta
-              </Button>
-            </Card.Header>
-            <Card.Body className="p-0">
-              <div style={{ overflowX: 'auto', width: '100%' }}>
-                <Table hover responsive className="mb-0 align-middle" style={{ minWidth: '1000px' }}>
-                  <thead className="table-light">
-                    <tr>
-                      <th>Ime i prezime (Porodica)</th>
-                      <th>Kontakt i Adresa</th>
-                      <th>Medicinske beleške</th>
-                      <th>Status kartona</th>
-                      <th className="text-end pe-4">Akcije</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {patients.map(patient => (
-                      <tr key={patient.id} className={patient.status === 'Deaktiviran' ? 'table-secondary' : ''}>
-                        <td>
-                          <strong>{patient.firstName} {patient.lastName}</strong><br/>
-                          <small className="text-muted">{patient.familyName}</small>
-                        </td>
-                        <td>
-                          <small>📞 {patient.phone}</small><br/>
-                          <small>📧 {patient.email}</small><br/>
-                          <small>📍 {patient.address}</small>
-                        </td>
-                        <td>
-                          <small className="text-muted d-inline-block text-truncate" style={{ maxWidth: '200px' }}>
-                            {patient.medicalNotes || 'Nema posebnih beleški'}
-                          </small>
-                        </td>
-                        <td><Badge bg={patient.status === 'Aktivan' ? 'success' : 'danger'}>{patient.status}</Badge></td>
-                        <td className="text-end pe-4">
-                          <Button variant="outline-primary" size="sm" className="me-2 mb-1" onClick={() => handlePatientShowEdit(patient)}>✎ Izmeni</Button>
-                          <Button variant={patient.status === 'Aktivan' ? 'outline-danger' : 'outline-success'} size="sm" className="mb-1" onClick={() => togglePatientStatus(patient.id, patient.status)}>
-                            {patient.status === 'Aktivan' ? '🚫 Deaktiviraj' : '⟲ Aktiviraj'}
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-            </Card.Body>
-          </Card>
-        </Tab>
+        const appointmentData = {
+            request_id: selectedRequest.id,
+            staff_id: selectedStaffId,
+            service_type: selectedRequest.service_type,
+            schedule_date: selectedRequest.preferred_date,
+            schedule_time: selectedRequest.preferred_time,
+            location_preference: selectedRequest.location_preference,
+        }
 
-        {/* TAB 2: MEDICAL STAFF */}
-        <Tab eventKey="staff" title="Medicinsko Osoblje">
-          <Card className="border-0 shadow-sm">
-            <Card.Header className="bg-white d-flex justify-content-between align-items-center pt-4 pb-3">
-              <h5 className="mb-0 fw-bold" style={{ color: '#125447' }}>Registar zaposlenih radnika</h5>
-              <Button variant="primary" onClick={handleStaffShowAdd} style={{ backgroundColor: '#1a7a68', border: 'none' }}>
-                + Registruj osoblje
-              </Button>
-            </Card.Header>
-            <Card.Body className="p-0">
-              <div style={{ overflowX: 'auto', width: '100%' }}>
-                <Table hover responsive className="mb-0 align-middle" style={{ minWidth: '1000px' }}>
-                  <thead className="table-light">
-                    <tr>
-                      <th>Medicinski radnik</th>
-                      <th>Zvanje / Uloga</th>
-                      <th>Kontakt podaci</th>
-                      <th>Plata i Smena</th> {/* PROMENJENO */}
-                      <th>Status profila</th>
-                      <th className="text-end pe-4">Akcije</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {staff.map(member => (
-                      <tr key={member.id} className={member.status === 'Deaktiviran' ? 'table-secondary' : ''}>
-                        <td><strong>{member.firstName} {member.lastName}</strong><br/><small className="text-muted">ID Radnika: #00{member.id}</small></td>
-                        <td><Badge bg="info" className="text-dark">{member.role}</Badge></td>
-                        <td><small>📞 {member.phone}</small><br/><small>📧 {member.email}</small></td>
-                        <td>
-                          <strong>{member.salary}</strong><br/>
-                          <Badge bg={member.shift === 'Jutarnja' ? 'warning text-dark' : member.shift === 'Popodnevna' ? 'primary' : 'dark'}>{member.shift}</Badge>
-                        </td>
-                        <td><Badge bg={member.status === 'Aktivan' ? 'success' : 'danger'}>{member.status}</Badge></td>
-                        <td className="text-end pe-4">
-                          <Button variant="outline-primary" size="sm" className="me-2 mb-1" onClick={() => handleStaffShowEdit(member)}>✎ Izmeni</Button>
-                          <Button variant={member.status === 'Aktivan' ? 'outline-danger' : 'outline-success'} size="sm" className="mb-1" onClick={() => toggleStaffStatus(member.id, member.status)}>
-                            {member.status === 'Aktivan' ? '🚫 Deaktiviraj' : '⟲ Aktiviraj'}
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-            </Card.Body>
-          </Card>
-        </Tab>
+        try {
+            await api.post('/api/appointment/create_appointment', appointmentData)
+            alert('Termin je uspešno obrađen!')
+            setShowTriageModal(false)
+            setSelectedStaffId('')
+            fetchAllData()
+        } catch (error) {
+            alert("Greška pri kreiranju termina. Proverite DTO formate na backendu.")
+        }
+    }
 
-        {/* TAB 3: SCHEDULE MANAGEMENT */}
-        <Tab eventKey="schedules" title="Kreiranje Rasporeda">
-          <Card className="border-0 shadow-sm">
-            <Card.Header className="bg-white d-flex justify-content-between align-items-center pt-4 pb-3">
-              <h5 className="mb-0 fw-bold" style={{ color: '#125447' }}>Planiranje poseta i alokacija timova</h5>
-              <Button variant="primary" onClick={handleScheduleShowAdd} style={{ backgroundColor: '#16a085', border: 'none' }}>
-                + Kreiraj novi termin
-              </Button>
-            </Card.Header>
-            <Card.Body className="p-0">
-              <div style={{ overflowX: 'auto', width: '100%' }}>
-                <Table hover responsive className="mb-0 align-middle" style={{ minWidth: '950px' }}>
-                  <thead className="table-light">
-                    <tr>
-                      <th>Pacijent</th>
-                      <th>Zaduženo osoblje</th>
-                      <th>Datum i vreme</th>
-                      <th>Usluga i Cena</th> {/* PROMENJENO */}
-                      <th>Lokacija</th>
-                      <th>Status</th>
-                      <th className="text-end pe-4">Akcije</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {schedules.map(session => (
-                      <tr key={session.id}>
-                        <td className="fw-bold">{session.patientName}</td>
-                        <td>👤 {session.staffName}</td>
-                        <td>📅 {session.date} u {session.time} h</td>
-                        <td>
-                          {session.service}<br/>
-                          <Badge bg="info" className="text-dark mt-1">{session.price}</Badge>
-                        </td>
-                        <td><small>📍 {session.location}</small></td>
-                        <td><Badge bg="success">{session.status}</Badge></td>
-                        <td className="text-end pe-4">
-                          <Button variant="outline-danger" size="sm" onClick={() => deleteSchedule(session.id)}>
-                            ✕ Otkaži termin
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-            </Card.Body>
-          </Card>
-        </Tab>
+    if (isLoading) return <div className="text-center mt-5"><Spinner animation="border" variant="success" /></div>
 
-        {/* TAB 4: VISIT REPORTS */}
-        <Tab eventKey="reports" title="Izveštaji o Posetama">
-          <Card className="border-0 shadow-sm">
-            <Card.Header className="bg-white pt-4 pb-3">
-              <h5 className="mb-0 fw-bold" style={{ color: '#125447' }}>Pregled medicinskih izveštaja sa terena</h5>
-            </Card.Header>
-            <Card.Body className="p-3">
-              {reports.map(rep => (
-                <Card key={rep.id} className="mb-3 border-start border-4 border-success shadow-sm">
-                  <Card.Body>
-                    <Row className="mb-2">
-                      <Col md={4}><strong>Pacijent:</strong> {rep.patientName}</Col>
-                      <Col md={4}><strong>Osoblje:</strong> {rep.staffName}</Col>
-                      <Col md={4} className="text-md-end text-muted"><small>Datum posete: {rep.date}</small></Col>
-                    </Row>
-                    <div className="bg-light p-3 rounded mb-2">
-                      <strong>Zdravstveni izveštaj:</strong> <br />
-                      <p className="mb-0 text-dark small">{rep.summary}</p>
-                    </div>
-                    <div className="p-1">
-                      <small className="text-muted"><strong>Komentar administratora/osoblja:</strong> {rep.comment}</small>
-                    </div>
-                  </Card.Body>
-                </Card>
-              ))}
-            </Card.Body>
-          </Card>
-        </Tab>
-
-      </Tabs>
-
-      {/* --- MODAL 1: PATIENT FORM --- */}
-      <Modal show={showPatientModal} onHide={handlePatientClose} size="lg" centered>
-        <Modal.Header closeButton className="bg-light"><Modal.Title style={{ color: '#125447' }}>{isEditingPatient ? 'Izmena kartona' : 'Registracija pacijenta'}</Modal.Title></Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleSavePatient}>
-            <Row><Col md={6}><Form.Group className="mb-3"><Form.Label>Ime</Form.Label><Form.Control name="firstName" value={patientFormData.firstName} onChange={handlePatientChange} required /></Form.Group></Col><Col md={6}><Form.Group className="mb-3"><Form.Label>Prezime</Form.Label><Form.Control name="lastName" value={patientFormData.lastName} onChange={handlePatientChange} required /></Form.Group></Col></Row>
-            <Row><Col md={6}><Form.Group className="mb-3"><Form.Label>Porodica</Form.Label><Form.Control name="familyName" value={patientFormData.familyName} onChange={handlePatientChange} /></Form.Group></Col><Col md={6}><Form.Group className="mb-3"><Form.Label>Adresa</Form.Label><Form.Control name="address" value={patientFormData.address} onChange={handlePatientChange} required /></Form.Group></Col></Row>
-            <Row><Col md={6}><Form.Group className="mb-3"><Form.Label>Telefon</Form.Label><Form.Control name="phone" value={patientFormData.phone} onChange={handlePatientChange} required /></Form.Group></Col><Col md={6}><Form.Group className="mb-3"><Form.Label>Email</Form.Label><Form.Control name="email" type="email" value={patientFormData.email} onChange={handlePatientChange} required /></Form.Group></Col></Row>
-            <Form.Group className="mb-4"><Form.Label>Medicinske beleške</Form.Label><Form.Control as="textarea" rows={3} name="medicalNotes" value={patientFormData.medicalNotes} onChange={handlePatientChange} style={{ resize: 'none' }} /></Form.Group>
-            <div className="d-flex justify-content-end gap-2 border-top pt-3"><Button variant="secondary" onClick={handlePatientClose}>Odustani</Button><Button variant="primary" type="submit" style={{ backgroundColor: '#1a7a68', border: 'none' }}>Potvrdi</Button></div>
-          </Form>
-        </Modal.Body>
-      </Modal>
-
-      {/* --- MODAL 2: STAFF FORM --- */}
-      <Modal show={showStaffModal} onHide={handleStaffClose} size="lg" centered>
-        <Modal.Header closeButton className="bg-light"><Modal.Title style={{ color: '#125447' }}>{isEditingStaff ? 'Izmena osoblja' : 'Registracija osoblja'}</Modal.Title></Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleSaveStaff}>
-            <Row><Col md={6}><Form.Group className="mb-3"><Form.Label>Ime</Form.Label><Form.Control name="firstName" value={staffFormData.firstName} onChange={handleStaffChange} required /></Form.Group></Col><Col md={6}><Form.Group className="mb-3"><Form.Label>Prezime</Form.Label><Form.Control name="lastName" value={staffFormData.lastName} onChange={handleStaffChange} required /></Form.Group></Col></Row>
-            <Row><Col md={6}><Form.Group className="mb-3"><Form.Label>Email</Form.Label><Form.Control name="email" type="email" value={staffFormData.email} onChange={handleStaffChange} required /></Form.Group></Col><Col md={6}><Form.Group className="mb-3"><Form.Label>Telefon</Form.Label><Form.Control name="phone" value={staffFormData.phone} onChange={handleStaffChange} required /></Form.Group></Col></Row>
-            <Row>
-              <Col md={4}>
-                <Form.Group className="mb-4">
-                  <Form.Label>Zvanje / Uloga</Form.Label>
-                  <Form.Select name="role" value={staffFormData.role} onChange={handleStaffChange}>
-                    <option value="Negovateljica">Negovateljica</option>
-                    <option value="Medicinska sestra">Medicinska sestra</option>
-                    <option value="Geronto domaćica">Geronto domaćica</option>
-                    <option value="Lekar/Doktor">Lekar/Doktor</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-4">
-                  <Form.Label>Smena</Form.Label>
-                  <Form.Select name="shift" value={staffFormData.shift} onChange={handleStaffChange}>
-                    <option value="Jutarnja">Jutarnja</option>
-                    <option value="Popodnevna">Popodnevna</option>
-                    <option value="Noćna">Noćna</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-              {/* DODATO: Unos plate u formu za osoblje */}
-              <Col md={4}>
-                <Form.Group className="mb-4">
-                  <Form.Label>Plata</Form.Label>
-                  <Form.Control name="salary" placeholder="npr. 90000 rsd" value={staffFormData.salary} onChange={handleStaffChange} required />
-                </Form.Group>
-              </Col>
-            </Row>
-            <div className="d-flex justify-content-end gap-2 border-top pt-3"><Button variant="secondary" onClick={handleStaffClose}>Odustani</Button><Button variant="primary" type="submit" style={{ backgroundColor: '#1a7a68', border: 'none' }}>Potvrdi</Button></div>
-          </Form>
-        </Modal.Body>
-      </Modal>
-
-      {/* --- MODAL 3: SCHEDULE FORM --- */}
-      <Modal show={showScheduleModal} onHide={handleScheduleClose} centered size="lg">
-        <Modal.Header closeButton className="bg-light">
-          <Modal.Title style={{ color: '#125447' }}>Planiranje i dodela termina</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleSaveSchedule}>
-            
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Izaberite pacijenta</Form.Label>
-                  <Form.Select name="patientIndex" value={scheduleFormData.patientIndex} onChange={handleScheduleChange}>
-                    {patients.filter(p => p.status === 'Aktivan').map((p, index) => (
-                      <option key={p.id} value={index}>
-                        {p.firstName} {p.lastName} ({p.familyName})
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Izaberite slobodno osoblje</Form.Label>
-                  <Form.Select name="staffIndex" value={scheduleFormData.staffIndex} onChange={handleScheduleChange}>
-                    {staff.filter(s => s.status === 'Aktivan').map((s, index) => (
-                      <option key={s.id} value={index}>
-                        {s.firstName} {s.lastName} - {s.role} ({s.shift} smena)
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
-              </Col>
+    return (
+        <Container className='mt-5'>
+            <Row className='align-items-center mb-4'>
+                <Col>
+                    <h2>Administratorski Kontrolni Centar</h2>
+                    <p className="text-muted">Glavni interfejs za upravljanje ERP sistemom MinuteNurse.</p>
+                </Col>
             </Row>
 
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Datum posete</Form.Label>
-                  <Form.Control type="date" name="date" value={scheduleFormData.date} onChange={handleScheduleChange} required />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Vreme posete</Form.Label>
-                  <Form.Control type="time" name="time" value={scheduleFormData.time} onChange={handleScheduleChange} required />
-                </Form.Group>
-              </Col>
-            </Row>
+            <Tabs defaultActiveKey="requests" id="admin-tabs" className="mb-4">
+                
+                {/* TAB 1: SERVICE REQUESTS */}
+                <Tab eventKey="requests" title="Trijaža Zahteva (Novi)">
+                    <Card className="border-0 shadow-sm">
+                        <Card.Header className="bg-white pt-4 pb-3">
+                            <h5 className="mb-0 fw-bold text-danger">Pristigli zahtevi pacijenata na čekanju</h5>
+                        </Card.Header>
+                        <Card.Body className="p-0">
+                            <Table hover responsive className="mb-0 align-middle">
+                                <thead className="table-light">
+                                    <tr>
+                                        <th>ID Zahteva</th>
+                                        <th>Usluga</th>
+                                        <th>Željeni Datum i Vreme</th>
+                                        <th>Lokacija</th>
+                                        <th className="text-end pe-4">Akcija</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {pendingRequests.map(req => (
+                                        <tr key={req.id}>
+                                            <td><small className="text-muted">{req.id}</small></td>
+                                            <td className="fw-bold">{req.service_type}</td>
+                                            <td>{req.preferred_date}, {req.preferred_time}</td>
+                                            <td>{req.location_preference}</td>
+                                            <td className="text-end pe-4">
+                                                <Button variant="success" size="sm" onClick={() => { setSelectedRequest(req); setShowTriageModal(true); }}>
+                                                    ✓ Dodeliti osoblje
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {pendingRequests.length === 0 && <tr><td colSpan="5" className="text-center py-4">Nema novih zahteva.</td></tr>}
+                                </tbody>
+                            </Table>
+                        </Card.Body>
+                    </Card>
+                </Tab>
 
-            <Row>
-              <Col md={5}>
-                <Form.Group className="mb-4">
-                  <Form.Label>Vrsta medicinske usluge</Form.Label>
-                  <Form.Select name="service" value={scheduleFormData.service} onChange={handleScheduleChange}>
-                    <option value="Davanje terapije (Infuzija)">Davanje terapije (Infuzija / Injekcija)</option>
-                    <option value="Nega rane / Previjanje">Nega rane / Previjanje</option>
-                    <option value="Gerontološka nega">Gerontološka nega (Pomoć u kući)</option>
-                    <option value="Lekarski pregled">Lekarski pregled na terenu</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
+                {/* TAB 2: APPOINTMENTS */}
+                <Tab eventKey="appointments" title="Svi Termini">
+                    <Card className="border-0 shadow-sm">
+                        <Card.Header className="bg-white pt-4 pb-3">
+                            <h5 className="mb-0 fw-bold" style={{ color: '#125447' }}>Globalni kalendar svih termina</h5>
+                        </Card.Header>
+                        <Card.Body className="p-0">
+                            <Table hover responsive className="mb-0 align-middle">
+                                <thead className="table-light">
+                                    <tr>
+                                        <th>ID Termina</th>
+                                        <th>Tip usluge</th>
+                                        <th>Lokacija</th>
+                                        <th>Datum i Vreme</th>
+                                        <th>ID Osoblja (Radnik)</th>
+                                        <th>ID Zahteva (Ref)</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {appointments.map(appt => (
+                                        <tr key={appt.id}>
+                                            <td><small>{appt.id}</small></td>
+                                            <td><small>{appt.service_type}</small></td>
+                                            <td><small>{appt.location_preference || appt.location}</small></td>
+                                            <td><strong>{appt.scheduled_date}</strong> u {appt.scheduled_time}</td>
+                                            <td><small className="text-muted">{appt.staff_id}</small></td>
+                                            <td><small className="text-muted">{appt.request_id}</small></td>
+                                            <td>
+                                                <Badge bg={appt.schedule === 'SCHEDULED' || appt.schedule === 'Zakazano' ? 'success' : 'danger'}>
+                                                    {appt.schedule}
+                                                </Badge>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {appointments.length === 0 && <tr><td colSpan="7" className="text-center py-4">Nema zakazanih termina.</td></tr>}
+                                </tbody>
+                            </Table>
+                        </Card.Body>
+                    </Card>
+                </Tab>
 
-              <Col md={4}>
-                <Form.Group className="mb-4">
-                  <Form.Label>Lokacija pružanja usluge</Form.Label>
-                  <Form.Select name="location" value={scheduleFormData.location} onChange={handleScheduleChange}>
-                    <option value="Ambulanta BW">Ambulanta (Beograd na vodi)</option>
-                    <option value="Kućna poseta">Kućna poseta (Adresa pacijenta)</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-              
-              {/* DODATO: Unos cene u formu za zakazivanje */}
-              <Col md={3}>
-                <Form.Group className="mb-4">
-                  <Form.Label>Cena</Form.Label>
-                  <Form.Control name="price" placeholder="npr. 6000 rsd" value={scheduleFormData.price} onChange={handleScheduleChange} required/>
-                </Form.Group>
-              </Col>
-            </Row>
+                {/* TAB 3: PATIENTS */}
+                <Tab eventKey="patients" title="Pacijenti">
+                    <Card className="border-0 shadow-sm">
+                        <Card.Header className="bg-white d-flex justify-content-between align-items-center pt-4 pb-3">
+                            <h5 className="mb-0 fw-bold" style={{ color: '#125447' }}>Baza pacijenata</h5>
+                            <Button variant="primary" onClick={() => setShowPatientModal(true)} style={{ backgroundColor: '#1a7a68', border: 'none' }}>+ Registruj</Button>
+                        </Card.Header>
+                        <Card.Body className="p-0">
+                            <Table hover responsive className="mb-0 align-middle">
+                                <thead className="table-light">
+                                    <tr><th>ID Profila</th><th>Porodica</th><th>Datum rođenja</th><th>Status</th></tr>
+                                </thead>
+                                <tbody>
+                                    {patients.map(p => (
+                                        <tr key={p.id}>
+                                            <td><small>{p.id}</small></td>
+                                            <td><strong>{p.family_name}</strong><br/><small>{p.contact_email}</small></td>
+                                            <td>{p.date_of_birth}</td>
+                                            <td><Badge bg={p.is_active ? 'success' : 'danger'}>{p.is_active ? 'Aktivan' : 'Neaktivan'}</Badge></td>
+                                        </tr>
+                                    ))}
+                                    {patients.length === 0 && <tr><td colSpan="4" className="text-center py-4">Nema registrovanih pacijenata.</td></tr>}
+                                </tbody>
+                            </Table>
+                        </Card.Body>
+                    </Card>
+                </Tab>
 
-            <div className="d-flex justify-content-end gap-2 border-top pt-3">
-              <Button variant="secondary" onClick={handleScheduleClose}>Odustani</Button>
-              <Button variant="success" type="submit" style={{ backgroundColor: '#16a085', border: 'none' }}>
-                Generiši raspored
-              </Button>
-            </div>
-          </Form>
-        </Modal.Body>
-      </Modal>
+                {/* TAB 4: STAFF */}
+                <Tab eventKey="staff" title="Osoblje">
+                    <Card className="border-0 shadow-sm">
+                        <Card.Header className="bg-white d-flex justify-content-between align-items-center pt-4 pb-3">
+                            <h5 className="mb-0 fw-bold" style={{ color: '#125447' }}>Registar zaposlenih</h5>
+                            <Button variant="primary" onClick={() => setShowStaffModal(true)} style={{ backgroundColor: '#1a7a68', border: 'none' }}>+ Registruj</Button>
+                        </Card.Header>
+                        <Card.Body className="p-0">
+                            <Table hover responsive className="mb-0 align-middle">
+                                <thead className="table-light">
+                                    <tr><th>ID Profila</th><th>Zvanje</th><th>Smena</th><th>Status</th></tr>
+                                </thead>
+                                <tbody>
+                                    {staff.map(s => (
+                                        <tr key={s.id}>
+                                            <td><small>{s.id}</small></td>
+                                            <td><strong>{s.job_title}</strong></td>
+                                            <td><Badge bg="info">{s.shift}</Badge></td>
+                                            <td><Badge bg={s.is_active ? 'success' : 'danger'}>{s.is_active ? 'Aktivan' : 'Neaktivan'}</Badge></td>
+                                        </tr>
+                                    ))}
+                                    {staff.length === 0 && <tr><td colSpan="4" className="text-center py-4">Nema osoblja.</td></tr>}
+                                </tbody>
+                            </Table>
+                        </Card.Body>
+                    </Card>
+                </Tab>
 
-    </Container>
-  )
+                {/* TAB 5: REPORTS */}
+                <Tab eventKey="reports" title="Izveštaji o posetama (Mock)">
+                  <Card className="border-0 shadow-sm">
+                    <Card.Header className="bg-white pt-4 pb-3">
+                      <h5 className="mb-0 fw-bold" style={{ color: '#125447' }}>Pregled medicinskih izveštaja sa terena</h5>
+                    </Card.Header>
+                    <Card.Body className="p-3">
+                      {reports.map(rep => (
+                        <Card key={rep.id} className="mb-3 border-start border-4 border-success shadow-sm">
+                          <Card.Body>
+                            <Row className="mb-2">
+                              <Col md={4}><strong>Pacijent:</strong> {rep.patientName}</Col>
+                              <Col md={4}><strong>Osoblje:</strong> {rep.staffName}</Col>
+                              <Col md={4} className="text-md-end text-muted"><small>Datum posete: {rep.date}</small></Col>
+                            </Row>
+                            <div className="bg-light p-3 rounded mb-2">
+                              <strong>Zdravstveni izveštaj:</strong> <br />
+                              <p className="mb-0 text-dark small">{rep.summary}</p>
+                            </div>
+                            <div className="p-1">
+                              <small className="text-muted"><strong>Komentar administratora/osoblja:</strong> {rep.comment}</small>
+                            </div>
+                          </Card.Body>
+                        </Card>
+                      ))}
+                    </Card.Body>
+                  </Card> 
+                </Tab>
+            </Tabs>
+
+            {/* --- MODAL: TRIJAŽA / CREATING APPOINTMENT --- */}
+            <Modal show={showTriageModal} onHide={() => setShowTriageModal(false)} centered size="lg">
+                <Modal.Header closeButton className="bg-light">
+                    <Modal.Title style={{ color: '#125447' }}>Dodela termina osoblju</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {selectedRequest && (
+                        <div className="mb-4 p-3 bg-light rounded border">
+                            <strong>Usluga:</strong> {selectedRequest.service_type} <br/>
+                            <strong>Datum:</strong> {selectedRequest.preferred_date} u {selectedRequest.preferred_time} <br/>
+                            <strong>Lokacija:</strong> {selectedRequest.location_preference}
+                        </div>
+                    )}
+                    <Form onSubmit={handleApproveRequest}>
+                        <Form.Group className="mb-3">
+                            <Form.Label className="fw-bold">Izaberite slobodno osoblje</Form.Label>
+                            <Form.Select value={selectedStaffId} onChange={(e) => setSelectedStaffId(e.target.value)} required>
+                                <option value="">-- Odaberite medicinskog radnika --</option>
+                                {staff.filter(s => s.is_active).map(s => (
+                                    <option key={s.id} value={s.id}>
+                                        {s.job_title} (Smena: {s.shift}) - ID: {s.id.substring(0,8)}...
+                                    </option>
+                                ))}
+                            </Form.Select>
+                        </Form.Group>
+
+                        <Form.Group className="mb-4">
+                            <Form.Label className="fw-bold">Odluka administratora (Status)</Form.Label>
+                            <Form.Select value={scheduleStatus} onChange={(e) => setScheduleStatus(e.target.value)}>
+                                <option value="SCHEDULED">Odobri i Zakaži (SCHEDULED)</option>
+                                <option value="CANCELED">Odbij / Otkaži (CANCELED)</option>
+                            </Form.Select>
+                        </Form.Group>
+
+                        <div className="d-flex justify-content-end gap-2 border-top pt-3">
+                            <Button variant="secondary" onClick={() => setShowTriageModal(false)}>Odustani</Button>
+                            <Button variant="success" type="submit">Generiši Termin</Button>
+                        </div>
+                    </Form>
+                </Modal.Body>
+            </Modal>
+
+            {/* --- MODAL: CREATING STAFF --- */}
+            <Modal show={showStaffModal} onHide={() => setShowStaffModal(false)} centered size="lg">
+                <Modal.Header closeButton className="bg-light">
+                    <Modal.Title style={{ color: '#125447' }}>Registracija profila osoblja</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form onSubmit={handleSaveStaff}>
+                        <Form.Group className="mb-3">
+                            <Form.Label className="fw-bold">User UUID (ID korisnika iz baze)</Form.Label>
+                            <Form.Control 
+                                type="text" 
+                                placeholder="Unesite UUID korisnika"
+                                value={staffFormData.user_id}
+                                onChange={(e) => setStaffFormData({...staffFormData, user_id: e.target.value})}
+                                required
+                            />
+                        </Form.Group>
+
+                        <Row>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Zvanje (Job Title)</Form.Label>
+                                    <Form.Control 
+                                        type="text" 
+                                        value={staffFormData.job_title}
+                                        onChange={(e) => setStaffFormData({...staffFormData, job_title: e.target.value})}
+                                        required
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Smena (Shift)</Form.Label>
+                                    <Form.Select 
+                                        value={staffFormData.shift}
+                                        onChange={(e) => setStaffFormData({...staffFormData, shift: e.target.value})}
+                                    >
+                                        <option value="Jutarnja">Jutarnja</option>
+                                        <option value="Popodnevna">Popodnevna</option>
+                                        <option value="Noćna">Noćna</option>
+                                    </Form.Select>
+                                </Form.Group>
+                            </Col>
+                        </Row>
+
+                        <Row>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Plata (Salary)</Form.Label>
+                                    <Form.Control 
+                                        type="number" 
+                                        placeholder="npr. 120000"
+                                        value={staffFormData.salary}
+                                        onChange={(e) => setStaffFormData({...staffFormData, salary: e.target.value})}
+                                        required
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-4">
+                                    <Form.Label>Broj licence (License Number)</Form.Label>
+                                    <Form.Control 
+                                        type="text" 
+                                        placeholder="npr. LIC-12345"
+                                        value={staffFormData.license_number}
+                                        onChange={(e) => setStaffFormData({...staffFormData, license_number: e.target.value})}
+                                        required
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+
+                        <div className="d-flex justify-content-end gap-2 border-top pt-3">
+                            <Button variant="secondary" onClick={() => setShowStaffModal(false)}>Odustani</Button>
+                            <Button variant="primary" type="submit" style={{ backgroundColor: '#1a7a68', border: 'none' }}>
+                                Sačuvaj profil osoblja
+                            </Button>
+                        </div>
+                    </Form>
+                </Modal.Body>
+            </Modal>
+
+            {/* --- MODAL: CREATING PATIENT --- */}
+            <Modal show={showPatientModal} onHide={() => setShowPatientModal(false)} centered size="lg">
+                <Modal.Header closeButton className="bg-light">
+                    <Modal.Title style={{ color: '#125447' }}>Registracija profila pacijenta</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form onSubmit={handleSavePatient}>
+                        <Form.Group className="mb-3">
+                            <Form.Label className="fw-bold">User UUID (ID korisnika iz baze)</Form.Label>
+                            <Form.Control 
+                                type="text" 
+                                placeholder="Unesite UUID korisnika"
+                                value={patientFormData.user_id}
+                                onChange={(e) => setPatientFormData({...patientFormData, user_id: e.target.value})}
+                                required
+                            />
+                        </Form.Group>
+
+                        <Row>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Prezime porodice</Form.Label>
+                                    <Form.Control 
+                                        type="text" 
+                                        placeholder="npr. Petrović"
+                                        value={patientFormData.family_name}
+                                        onChange={(e) => setPatientFormData({...patientFormData, family_name: e.target.value})}
+                                        required
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Datum rođenja</Form.Label>
+                                    <Form.Control 
+                                        type="date" 
+                                        value={patientFormData.date_of_birth}
+                                        onChange={(e) => setPatientFormData({...patientFormData, date_of_birth: e.target.value})}
+                                        required
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Kontakt email</Form.Label>
+                            <Form.Control 
+                                type="email" 
+                                placeholder="kontakt@example.com"
+                                value={patientFormData.contact_email}
+                                onChange={(e) => setPatientFormData({...patientFormData, contact_email: e.target.value})}
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-4">
+                            <Form.Label>Napomene o nezi (Care Notes)</Form.Label>
+                            <Form.Control 
+                                as="textarea" 
+                                rows={3}
+                                placeholder="Unesite specifične zdravstvene napomene..."
+                                value={patientFormData.care_notes}
+                                onChange={(e) => setPatientFormData({...patientFormData, care_notes: e.target.value})}
+                            />
+                        </Form.Group>
+
+                        <div className="d-flex justify-content-end gap-2 border-top pt-3">
+                            <Button variant="secondary" onClick={() => setShowPatientModal(false)}>Odustani</Button>
+                            <Button variant="primary" type="submit" style={{ backgroundColor: '#1a7a68', border: 'none' }}>
+                                Sačuvaj profil pacijenta
+                            </Button>
+                        </div>
+                    </Form>
+                </Modal.Body>
+            </Modal>
+        </Container>
+    )
 }
 
 export default AdminPanel

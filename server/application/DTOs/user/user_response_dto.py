@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from infrastructure.entities.user import UserRole
+from infrastructure.entities.enums.enums import UserRole
 from uuid import UUID
 
 class UserResponseDTO(BaseModel):

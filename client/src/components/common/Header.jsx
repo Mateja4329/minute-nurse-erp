@@ -18,7 +18,7 @@ const Header = () => {
             console.log("Logout successful")
             alert('Odjavili ste se.')
 
-            navigate('/login')
+            navigate("/login", { replace: true })
         } catch (e) {
             console.error("Network error: ", e)
             alert("Došlo je do greške prilikom odjavljivanja. Molimo pokušajte ponovo.")

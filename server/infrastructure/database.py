@@ -29,11 +29,11 @@ async def get_db():
         await db.close() # if it passed or not, the session must always be safely closed
 
 # or just use this more "elegant" way of typing:
-'''
-async def get_db():
-    async with AsyncSessionLocal() as db:
-        yield db
-'''
+
+# async def get_db():
+#     async with AsyncSessionLocal() as db:
+#         yield db
+
 # they do the same job. It's the same as "using()" in C#
 
 

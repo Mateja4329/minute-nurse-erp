@@ -13,11 +13,10 @@ from application.services.user_service import get_user_service
 
 from infrastructure.database import get_db
 from infrastructure.entities.user import User
-from infrastructure.repository.interface.i_user_repository import IUserRepository
 
 from application.security.rate_limiter import limiter
 
-router = APIRouter(prefix="/api/user")
+router = APIRouter(prefix="/api/user", tags=["User"])
 
 # ------------------ brief explanation ------------------
 # DI container in C# is activated with: AddScoped<IRepo, Repo>().

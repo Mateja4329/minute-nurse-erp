@@ -16,10 +16,13 @@ class UserCreateDTO(BaseModel):
     def check_password_match(self):
         if self.password != self.confirm_password:
             raise ValueError("Passwords do not match")
+        # After the validation, wipe the confirm_password field
+        # so it doesn't accidentally get logged or stored later
+        # or stolen by malicious users
+        delattr(self, 'confirm_password')
         return self
 
-    ''' ---------- Explanation ----------
-    1. Use mode='after' so both fields are already parsed and present in self.
-    2. Return self at the end of the validator method if validation passes.
-    3. Raise a standard ValueError to fail validation and return an error message.
-    '''
+# ---------- Explanation ----------
+# 1. Use mode='after' so both fields are already parsed and present in self.
+# 2. Return self at the end of the validator method if validation passes.
+# 3. Raise a standard ValueError to fail validation and return an error message.

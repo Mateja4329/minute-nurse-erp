@@ -8,7 +8,7 @@ from application.DTOs.user.user_login_dto import UserLoginDTO
 from application.DTOs.user.user_create_dto import UserCreateDTO
 from application.DTOs.user.user_response_dto import UserResponseDTO
 from application.DTOs.user.user_update_dto import UserUpdateDTO
-from application.mappings.user_mapper import to_user_entity, to_user_response_dto
+from application.mappings.mapper import to_user_entity, to_user_response_dto
 from application.security import jwt_helper
 from application.services.interface.i_user_service import IUserService
 
@@ -110,7 +110,8 @@ class UserService(IUserService):
             request.first_name,
             request.last_name,
             request.phone_number,
-            request.address
+            request.address,
+            db
         )
 
         if updated_user is None:

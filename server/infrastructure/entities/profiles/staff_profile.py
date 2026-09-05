@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey
+from sqlalchemy import Column, String, Boolean, ForeignKey
 from infrastructure.database import Base
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -8,9 +8,7 @@ class StaffProfile(Base):
     __tablename__ = "staff_profile"
 
     id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4, index = True)
-    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id"), unique = True, nullable = False)
-
-    phone_number = Column(String(20), nullable = False)
+    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id"), unique = True, nullable = False, index=True)
 
     job_title = Column(String(50), nullable = False)
     shift = Column(String(20), nullable = False)
@@ -20,3 +18,4 @@ class StaffProfile(Base):
     is_active = Column(Boolean, default = True)
 
     user = relationship("User", back_populates="staff_profile")
+    appointment = relationship("Appointment", back_populates="staff_profile")

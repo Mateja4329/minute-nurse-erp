@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
@@ -14,6 +14,9 @@ from infrastructure.entities.profiles.staff_profile import StaffProfile
 
 from api.routers.user_controller import router as user_controller
 from api.routers.email_controller import router as email_controller
+from api.routers.profile_controller import router as profile_controller
+from api.routers.service_request_controller import router as service_request_controller
+from api.routers.appointment_controller import router as appointment_controller
 
 
 
@@ -28,6 +31,16 @@ app = FastAPI(title="MinuteNurse API", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+@app.middleware("http")
+async def disable_browser_cache(request: Request, call_next):
+    response = await call_next(request)
+
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+
+    return response
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -40,7 +53,10 @@ app.add_middleware(
 
 app.include_router(user_controller)
 app.include_router(email_controller)
+app.include_router(profile_controller)
+app.include_router(service_request_controller)
+app.include_router(appointment_controller)
 
 @app.get("/")
 def read_root():
-    return {"message": "MinuteNurse API i PostgreSQL baza su uspešno povezani!"}
+    return {"message": "MinuteNurse API and PostgreSQL are successfully connected!"}

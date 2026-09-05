@@ -6,6 +6,7 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import ProtectedRoute from './components/security/ProtectedRoute';
 
 // Adding the pages
 import HomeScreen from './screens/HomeScreen';
@@ -29,7 +30,8 @@ import {
 // The index route (path='/') renders LoginForm by default
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path='/' element={<App />}>
+    <Route path='/'
+    element={<App />}>, children: [
       {/* Default route - shows LoginForm when visiting the root path */}
       <Route index={true} element={<HomeScreen />} />
 
@@ -37,11 +39,28 @@ const router = createBrowserRouter(
       <Route path="login" element={<LoginForm />} />
       <Route path="register" element={<RegisterScreen />} />
 
-      <Route path="Administrator" element={<AdminPanel />} />
-      <Route path="MedicalStaff" element={<MedicalStaffPanel />} />
-      <Route path="Patient" element={<PatientPanel />} />
 
-      <Route path="Profile" element={<ProfileScreen />} />
+      <Route path="Administrator" element={
+        <ProtectedRoute>
+          <AdminPanel />
+        </ProtectedRoute>
+      } />
+      <Route path="MedicalStaff" element={
+        <ProtectedRoute>
+          <MedicalStaffPanel />
+        </ProtectedRoute>
+      } />
+      <Route path="Patient" element={
+        <ProtectedRoute>
+          <PatientPanel />
+        </ProtectedRoute>
+      } />
+      <Route path="Profile" element={
+        <ProtectedRoute>
+          <ProfileScreen />
+        </ProtectedRoute>
+      } />
+    ]
     </Route>
   )
 )

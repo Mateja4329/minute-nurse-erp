@@ -41,7 +41,7 @@ async def test_inquiry_email_rate_limiter_returns_429():
     }
 
     # Act
-    # We will send 3 quick requests fro  the same IP address
+    # We will send 3 quick requests from the same IP address
     # ASGITransport recieves "client" parameter so the limiter can know which is the IP address
     transport = ASGITransport(app=app, client=("127.0.0.1", 12345))
     async with AsyncClient(transport=transport, base_url="http://test") as ac:

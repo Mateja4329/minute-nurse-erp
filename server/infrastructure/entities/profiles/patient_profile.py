@@ -1,6 +1,6 @@
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import Column, Integer, String, Date, Text, Boolean, ForeignKey
+from sqlalchemy import Column, String, Date, Text, Boolean, ForeignKey
 from infrastructure.database import Base
 from sqlalchemy.orm import relationship
 
@@ -11,7 +11,7 @@ class PatientProfile(Base):
     __tablename__ = "patients_profile"
 
     id = Column(UUID(as_uuid = True), primary_key = True, default = uuid.uuid4, index = True)
-    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id"), unique = True, nullable = False)
+    user_id = Column(UUID(as_uuid = True), ForeignKey("users.id"), unique = True, nullable = False, index=True)
 
     family_name = Column(String(100), nullable = False)
 
@@ -23,3 +23,4 @@ class PatientProfile(Base):
 
     # this line of code tells SQLAlchemy that this relation and the one from user class have the same relationship
     user = relationship("User", back_populates="patient_profile")
+    service_request = relationship("ServiceRequest", back_populates="patient_profile")

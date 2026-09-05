@@ -1,0 +1,23 @@
+from typing import Protocol, Sequence
+from uuid import UUID
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from infrastructure.entities.profiles.patient_profile import PatientProfile
+from infrastructure.entities.profiles.staff_profile import StaffProfile
+
+
+class IProfileRepository(Protocol):
+    async def find_user_id_async(self, profile_id: UUID, db: AsyncSession):
+        ...
+    async def find_patient_profile_by_user_id_async(self, user_id: UUID, db: AsyncSession):
+        ...
+    async def find_staff_profile_by_user_id_async(self, user_id: UUID, db: AsyncSession):
+        ...
+    async def create_patient_profile_async(self, patient_profile: PatientProfile, db: AsyncSession):
+        ...
+    async def create_staff_profile_async(self, staff_profile: StaffProfile, db: AsyncSession):
+        ...
+    async def get_patient_profiles_async(self, db: AsyncSession) -> Sequence[PatientProfile]:
+        ...
+    async def get_staff_profiles_async(self, db: AsyncSession) -> Sequence[StaffProfile]:
+        ...

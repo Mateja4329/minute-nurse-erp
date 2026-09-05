@@ -1,7 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from application.DTOs.user.user_update_dto import UserUpdateDTO
 from infrastructure.entities.user import User
 from infrastructure.repository.interface.i_user_repository import IUserRepository
 
@@ -35,8 +34,10 @@ class UserRepository(IUserRepository):
     async def update_user_profile_async(
             self,
             user_id: str,
-            f_name: str, l_name: str,
-            phone_number: str, address: str,
+            f_name: str | None,
+            l_name: str | None,
+            phone_number: str | None,
+            address: str | None,
             db: AsyncSession):
 
         user = await self.get_user_by_id_async(db, user_id)

@@ -23,17 +23,17 @@ async def inquiry_email(
         if len(set(dto.message)) < 3:
             raise HTTPException(
                 status_code=400,
-                detail="Poruka nema smisla. Molimo Vas napišite jasan upit.")
+                detail="The message makes no sense. Please write a clear query.")
 
         forbidden_words = ["spam", "reklama", "kupi"]
         if any(word in dto.message for word in forbidden_words):
             raise HTTPException(
                 status_code=400,
-                detail="Vaša poruka sadrži nedozvoljene reči."
+                detail="Your message contains illegal words."
             )
 
         await service.send_email(dto)
-        return {"message": "Upit je uspešno poslat!"}
+        return {"message": "The inquiry has been successfully sent!"}
 
     except HTTPException as http_exc:
         # Catch our manual errors and send it to the frontend
@@ -44,13 +44,13 @@ async def inquiry_email(
         print(f"SMPT Error: {smtp_exc}")
         raise HTTPException(
             status_code=503,
-            detail="Trenutno imamo problem sa email serverom. Pokušajte malo kasnije.")
+            detail="We are currently experiencing a problem with our email server. Try a little later.")
 
     except Exception as e:
         # General server error
         print(f"Unknown Error sending email: {e}")
         raise HTTPException(
             status_code=500,
-            detail="Došlo je do neočekivane interne greške. Naš tim radi na rešavanju problema."
+            detail="An unexpected internal error has occurred. Our team is working to resolve the issue."
         )
 
