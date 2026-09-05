@@ -8,7 +8,7 @@ from application.DTOs.appointment.appointment_response_dto import AppointmentRes
 from application.mappings.mapper import to_appointment_entity, to_appointment_response_dto, \
     to_appointment_response_dto_list
 from application.services.interface.i_appointment_service import IAppointmentService
-from infrastructure.entities.enums.enums import Schedule, UserRole, LocationPreference
+from infrastructure.entities.enums.enums import Schedule, UserRole
 from infrastructure.entities.user import User
 
 from infrastructure.repository.appointment_repository import get_appointment_repository
