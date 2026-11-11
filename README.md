@@ -1,3 +1,5 @@
+Copyright (c) 2026 Mateja Glišović. All Rights Reserved.
+
 # Minute Nurse ERP (WIP)
 
 A comprehensive Enterprise Resource Planning (ERP) system designed to digitalize home healthcare management, shift scheduling, and patient record tracking. 
